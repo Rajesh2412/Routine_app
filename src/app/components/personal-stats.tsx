@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Droplets, Ruler, Weight } from "lucide-react";
 import { format } from "date-fns";
@@ -26,7 +27,11 @@ const secondaryStats = [
 ];
 
 export default function PersonalStats() {
-  const lastUpdated = format(new Date(), "PPP");
+  const [lastUpdated, setLastUpdated] = useState("");
+
+  useEffect(() => {
+    setLastUpdated(format(new Date(), "PPP"));
+  }, []);
 
   return (
     <>
@@ -41,9 +46,11 @@ export default function PersonalStats() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="pt-2 text-xs text-muted-foreground">
-                Last updated: {lastUpdated}
-              </p>
+              {lastUpdated && (
+                <p className="pt-2 text-xs text-muted-foreground">
+                  Last updated: {lastUpdated}
+                </p>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -59,9 +66,11 @@ export default function PersonalStats() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="pt-2 text-xs text-muted-foreground">
-                Last updated: {lastUpdated}
-              </p>
+              {lastUpdated && (
+                <p className="pt-2 text-xs text-muted-foreground">
+                  Last updated: {lastUpdated}
+                </p>
+              )}
             </CardContent>
           </Card>
         ))}
