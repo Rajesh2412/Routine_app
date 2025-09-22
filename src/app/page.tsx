@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues } from "@/lib/types";
-import { BODY_PARTS } from "@/lib/data";
+import { BODY_PARTS } from "@/app/lib/data";
 import { Filter, History, Loader2 } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
