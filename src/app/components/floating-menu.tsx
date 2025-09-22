@@ -1,15 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Home, Plus, History } from "lucide-react";
+import { Home, Plus, History, GlassWater } from "lucide-react";
 import { useState } from "react";
 
 interface FloatingMenuProps {
   onOpenAddForm: () => void;
   onShowHistory: () => void;
+  onOpenWaterForm: () => void;
 }
 
-export default function FloatingMenu({ onOpenAddForm, onShowHistory }: FloatingMenuProps) {
+export default function FloatingMenu({ onOpenAddForm, onShowHistory, onOpenWaterForm }: FloatingMenuProps) {
   const [activeButton, setActiveButton] = useState("home");
 
   const handleHomeClick = () => {
@@ -42,6 +43,14 @@ export default function FloatingMenu({ onOpenAddForm, onShowHistory }: FloatingM
         >
           <History className="h-7 w-7" />
           <span className="sr-only">History</span>
+        </Button>
+        <Button
+          onClick={onOpenWaterForm}
+          variant="ghost"
+          className="rounded-full h-14 w-14"
+        >
+          <GlassWater className="h-7 w-7 text-blue-400" />
+          <span className="sr-only">Log Water</span>
         </Button>
         <Button
           onClick={onOpenAddForm}

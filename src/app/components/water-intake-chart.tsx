@@ -19,25 +19,26 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { GlassWater } from "lucide-react";
+import type { WaterIntakeData } from "@/lib/types";
 
-const data = [
-  { date: "Mon", intake: 2.1 },
-  { date: "Tue", intake: 2.5 },
-  { date: "Wed", intake: 1.8 },
-  { date: "Thu", intake: 3.0 },
-  { date: "Fri", intake: 2.2 },
-  { date: "Sat", intake: 2.8 },
-  { date: "Sun", intake: 2.4 },
-];
+interface WaterIntakeChartProps {
+  waterIntakeData: WaterIntakeData[];
+}
 
 const dailyGoal = 3; // in Liters
-const todayIntake = data[data.length - 1].intake;
-const progress = Math.round((todayIntake / dailyGoal) * 100);
-const remainingIntake = Math.max(0, dailyGoal - todayIntake);
 
-const radialData = [{ name: "Today", value: progress, fill: "hsl(var(--primary))" }];
+export default function WaterIntakeChart({ waterIntakeData }: WaterIntakeChartProps) {
+  const today = new Date();
+  const todayString = today.toLocaleDateString('en-US', { weekday: 'short' });
 
-export default function WaterIntakeChart() {
+  const todayData = waterIntakeData.find(d => d.date === todayString);
+  const todayIntake = todayData ? todayData.intake : 0;
+  
+  const progress = Math.round((todayIntake / dailyGoal) * 100);
+  const remainingIntake = Math.max(0, dailyGoal - todayIntake);
+
+  const radialData = [{ name: "Today", value: progress, fill: "hsl(var(--primary))" }];
+
   return (
     <Card>
       <CardHeader>
@@ -53,7 +54,7 @@ export default function WaterIntakeChart() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-2 h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+              <BarChart data={waterIntakeData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIntake" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
