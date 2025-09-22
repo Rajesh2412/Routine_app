@@ -7,5 +7,4 @@ export const BODY_PARTS: BodyPart[] = [
   "Shoulders",
   "Arms",
   "Core",
-  "All"
 ];

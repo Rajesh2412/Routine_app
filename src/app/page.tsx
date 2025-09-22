@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
-import { v4 as uuidv4 } from "uuid";
 import type { Workout } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
 import { Button } from "@/components/ui/button";
@@ -91,6 +90,8 @@ export default function Home() {
     return workouts.filter((w) => w.bodyPart === filter);
   }, [workouts, filter]);
 
+  const allFilters = useMemo(() => ["All", ...BODY_PARTS], []);
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
@@ -123,7 +124,7 @@ export default function Home() {
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Filter size={20} /> Filter by Body Part</h3>
                   <WorkoutFilters
-                    bodyParts={["All", ...BODY_PARTS]}
+                    bodyParts={allFilters}
                     currentFilter={filter}
                     onFilterChange={setFilter}
                   />
