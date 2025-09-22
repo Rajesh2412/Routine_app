@@ -20,7 +20,7 @@ export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const historyRef = useRef<HTMLDivElement>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
 
   useEffect(() => {
@@ -88,8 +88,8 @@ export default function Home() {
     setIsFormOpen(true);
   };
 
-  const handleShowHistory = () => {
-    historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const handleShowHistory = (show: boolean) => {
+    setShowHistory(show);
   };
 
   const filteredWorkouts = useMemo(() => {
@@ -105,39 +105,41 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="container mx-auto p-4 md:p-8 pb-32">
-        <div ref={historyRef} className="mt-8">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History /> Workout History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Filter size={20} /> Filter by Body Part</h3>
-                <WorkoutFilters
-                  bodyParts={allFilters}
-                  currentFilter={filter}
-                  onFilterChange={setFilter}
-                />
-              </div>
-              {isLoading ? (
-                  <div className="flex justify-center items-center h-48">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-              ) : (
-                  <WorkoutHistory
-                    workouts={filteredWorkouts}
-                    onEdit={handleOpenEditForm}
-                    onDelete={handleDeleteWorkout}
+        {showHistory && (
+          <div className="mt-8">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History /> Workout History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Filter size={20} /> Filter by Body Part</h3>
+                  <WorkoutFilters
+                    bodyParts={allFilters}
+                    currentFilter={filter}
+                    onFilterChange={setFilter}
                   />
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                </div>
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-48">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <WorkoutHistory
+                      workouts={filteredWorkouts}
+                      onEdit={handleOpenEditForm}
+                      onDelete={handleDeleteWorkout}
+                    />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
-      <FloatingMenu onOpenAddForm={handleOpenAddForm} onShowHome={handleShowHistory} />
+      <FloatingMenu onOpenAddForm={handleOpenAddForm} onShowHistory={() => handleShowHistory(!showHistory)} />
 
       <WorkoutForm
         isOpen={isFormOpen}
