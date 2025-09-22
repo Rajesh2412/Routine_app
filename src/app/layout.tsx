@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Kinetic Journal',
+  title: "RajEsh's workout routine",
   description: 'A personalized workout journal app to track daily exercise details.',
 };
 
