@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/app/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 import type { Workout } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
