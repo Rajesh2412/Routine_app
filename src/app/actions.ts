@@ -1,8 +1,7 @@
 "use server";
 
-import { generateWorkoutSuggestions } from "@/ai/flows/generate-workout-suggestions";
-import type { Workout } from "@/lib/types";
 import { z } from "zod";
+import type { Workout } from "@/lib/types";
 
 const SuggestionSchema = z.object({
   workouts: z.array(z.any()),
@@ -21,20 +20,34 @@ export async function getAiWorkoutSuggestions(
   }
 
   try {
-    const workoutHistory = workouts
-      .slice(0, 10) // Use last 10 workouts for brevity
-      .map(
-        (w) =>
-          `${w.type} (${w.reps} reps, focusing on ${w.bodyPart} with ${w.equipment}) on ${w.date.toLocaleDateString()}`
-      )
-      .join("\n");
+    // This is a mock response since the Gemini API key is not available.
+    const mockSuggestions = `
+Here is a sample workout plan based on your goals:
 
-    const result = await generateWorkoutSuggestions({
-      workoutHistory: workoutHistory || "No recent workouts.",
-      fitnessGoals: fitnessGoals,
-    });
+**Focus: Upper Body Strength & Endurance**
+
+*   **Day 1: Push Day (Chest, Shoulders, Triceps)**
+    *   Bench Press: 3 sets of 8-12 reps
+    *   Overhead Press: 3 sets of 8-12 reps
+    *   Incline Dumbbell Press: 3 sets of 10-15 reps
+    *   Tricep Pushdowns: 3 sets of 12-15 reps
+    *   Lateral Raises: 3 sets of 15-20 reps
+
+*   **Day 2: Pull Day (Back, Biceps)**
+    *   Pull-ups/Lat Pulldowns: 3 sets to failure or 8-12 reps
+    *   Bent-Over Rows: 3 sets of 8-12 reps
+    *   Bicep Curls: 3 sets of 12-15 reps
+    *   Face Pulls: 3 sets of 15-20 reps
+
+*   **Day 3: Active Recovery or Cardio**
+    *   30-45 minutes of light cardio (jogging, cycling, etc.)
+    *   Full-body stretching.
+`;
     
-    return { success: true, message: result.suggestions };
+    return await new Promise(resolve => setTimeout(() => {
+        resolve({ success: true, message: mockSuggestions });
+    }, 1000));
+
   } catch (error) {
     console.error("Error generating AI suggestions:", error);
     return { success: false, message: "Failed to generate AI suggestions. Please try again." };

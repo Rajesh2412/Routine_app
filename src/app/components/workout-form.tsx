@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Workout, WorkoutFormValues } from "@/lib/types";
-import { BODY_PARTS } from "@/lib/data";
+import { BODY_PARTS } from "@/app/lib/data";
 
 const formSchema = z.object({
   type: z.string().min(2, { message: "Workout type is required." }),

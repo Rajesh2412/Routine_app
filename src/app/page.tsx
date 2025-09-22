@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import type { Workout } from "@/lib/types";
-import { initialWorkouts, BODY_PARTS } from "@/lib/data";
+import { initialWorkouts, BODY_PARTS } from "@/app/lib/data";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Bot, Filter, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
