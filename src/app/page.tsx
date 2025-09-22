@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import type { Workout } from "@/lib/types";
@@ -20,6 +20,8 @@ export default function Home() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const historyRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     const fetchWorkouts = async () => {
@@ -84,6 +86,10 @@ export default function Home() {
     setIsFormOpen(true);
   };
 
+  const handleShowHistory = () => {
+    historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const filteredWorkouts = useMemo(() => {
     if (filter === "All") {
       return workouts;
@@ -96,8 +102,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="container mx-auto p-4 md:p-8">
-        <div className="lg:col-span-2 mt-8 lg:mt-0">
+      <main className="container mx-auto p-4 md:p-8 pb-32">
+        <div ref={historyRef} className="lg:col-span-2 mt-8 lg:mt-0">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -129,7 +135,7 @@ export default function Home() {
         </div>
       </main>
 
-      <FloatingMenu onOpenAddForm={handleOpenAddForm} />
+      <FloatingMenu onOpenAddForm={handleOpenAddForm} onShowHistory={handleShowHistory} />
 
       <WorkoutForm
         isOpen={isFormOpen}
