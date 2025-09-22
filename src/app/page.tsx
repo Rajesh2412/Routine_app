@@ -14,6 +14,7 @@ import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
+import WaterIntakeChart from "./components/water-intake-chart";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -110,6 +111,7 @@ export default function Home() {
           <div className="space-y-8">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
             <PersonalStats />
+            <WaterIntakeChart />
           </div>
         )}
         {showHistory && (
