@@ -68,7 +68,10 @@ export default function WorkoutForm({
 
   useEffect(() => {
     if (editingWorkout) {
-      form.reset(editingWorkout);
+      form.reset({
+        ...editingWorkout,
+        reps: Number(editingWorkout.reps),
+      });
     } else {
       form.reset({
         type: "",
@@ -81,9 +84,9 @@ export default function WorkoutForm({
 
   const onSubmit = (data: WorkoutFormValues) => {
     if (editingWorkout) {
-      updateWorkout({ ...editingWorkout, ...data });
+      updateWorkout({ ...editingWorkout, ...data, reps: Number(data.reps) });
     } else {
-      addWorkout(data);
+      addWorkout({ ...data, reps: Number(data.reps) });
     }
     setIsOpen(false);
   };
@@ -150,7 +153,7 @@ export default function WorkoutForm({
                   <FormLabel>Body Part</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>

@@ -10,7 +10,7 @@ export type BodyPart =
 
 export interface Workout {
   id: string;
-  date: Date;
+  date: string; // Changed to string to store ISO date string
   type: string;
   reps: number;
   equipment: string;

@@ -1,40 +1,77 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { v4 as uuidv4 } from "uuid";
 import type { Workout } from "@/lib/types";
-import { initialWorkouts, BODY_PARTS } from "@/app/lib/data";
+import { BODY_PARTS } from "@/app/lib/data";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Bot, Filter, History } from "lucide-react";
+import { PlusCircle, Filter, History, Loader2 } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
-import AiSuggestions from "@/app/components/ai-suggestions";
 import WorkoutForm from "@/app/components/workout-form";
 import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
-  const [workouts, setWorkouts] = useState<Workout[]>(initialWorkouts);
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAddWorkout = (workout: Omit<Workout, "id" | "date">) => {
-    const newWorkout: Workout = {
-      id: new Date().toISOString(),
-      date: new Date(),
-      ...workout,
+  useEffect(() => {
+    const fetchWorkouts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "workouts"));
+        const workoutsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Workout[];
+        setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      } catch (error) {
+        console.error("Error fetching workouts: ", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setWorkouts((prev) => [newWorkout, ...prev]);
+
+    fetchWorkouts();
+  }, []);
+
+  const handleAddWorkout = async (workout: Omit<Workout, "id" | "date">) => {
+    const newWorkout: Omit<Workout, "id"> = {
+      ...workout,
+      date: new Date().toISOString(),
+    };
+    try {
+      const docRef = await addDoc(collection(db, "workouts"), newWorkout);
+      setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev]);
+    } catch (error) {
+      console.error("Error adding workout: ", error);
+    }
   };
 
-  const handleUpdateWorkout = (workout: Workout) => {
-    setWorkouts((prev) =>
-      prev.map((w) => (w.id === workout.id ? workout : w))
-    );
+  const handleUpdateWorkout = async (workout: Workout) => {
+    try {
+      const workoutRef = doc(db, "workouts", workout.id);
+      await updateDoc(workoutRef, workout);
+      setWorkouts((prev) =>
+        prev.map((w) => (w.id === workout.id ? workout : w))
+      );
+    } catch (error) {
+      console.error("Error updating workout: ", error);
+    }
   };
 
-  const handleDeleteWorkout = (id: string) => {
-    setWorkouts((prev) => prev.filter((w) => w.id !== id));
+  const handleDeleteWorkout = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "workouts", id));
+      setWorkouts((prev) => prev.filter((w) => w.id !== id));
+    } catch (error) {
+      console.error("Error deleting workout: ", error);
+    }
   };
 
   const handleOpenEditForm = (workout: Workout) => {
@@ -73,17 +110,6 @@ export default function Home() {
                 </Button>
               </CardContent>
             </Card>
-
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot /> AI Suggestions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AiSuggestions workouts={workouts} />
-              </CardContent>
-            </Card>
           </aside>
 
           <div className="lg:col-span-2 mt-8 lg:mt-0">
@@ -102,11 +128,17 @@ export default function Home() {
                     onFilterChange={setFilter}
                   />
                 </div>
-                <WorkoutHistory
-                  workouts={filteredWorkouts}
-                  onEdit={handleOpenEditForm}
-                  onDelete={handleDeleteWorkout}
-                />
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-48">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <WorkoutHistory
+                      workouts={filteredWorkouts}
+                      onEdit={handleOpenEditForm}
+                      onDelete={handleDeleteWorkout}
+                    />
+                )}
               </CardContent>
             </Card>
           </div>
