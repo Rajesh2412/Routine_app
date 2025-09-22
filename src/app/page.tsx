@@ -4,8 +4,8 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
-import type { Workout } from "@/lib/types";
-import { BODY_PARTS } from "@/app/lib/data";
+import type { Workout, WorkoutFormValues } from "@/lib/types";
+import { BODY_PARTS } from "@/lib/data";
 import { Filter, History, Loader2 } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
@@ -42,8 +42,8 @@ export default function Home() {
     fetchWorkouts();
   }, []);
 
-  const handleAddWorkout = async (workout: Omit<Workout, "id" | "date">) => {
-    const newWorkout: Omit<Workout, "id"> = {
+  const handleAddWorkout = async (workout: WorkoutFormValues) => {
+    const newWorkout = {
       ...workout,
       date: new Date().toISOString(),
     };
@@ -58,7 +58,9 @@ export default function Home() {
   const handleUpdateWorkout = async (workout: Workout) => {
     try {
       const workoutRef = doc(db, "workouts", workout.id);
-      await updateDoc(workoutRef, workout);
+      // We don't want to save the id field inside the document
+      const { id, ...workoutData } = workout;
+      await updateDoc(workoutRef, workoutData);
       setWorkouts((prev) =>
         prev.map((w) => (w.id === workout.id ? workout : w))
       );
