@@ -37,22 +37,22 @@ export default function PersonalStats() {
 
   return (
     <>
-      <Card className="mb-4">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-                Today's Footsteps
-            </CardTitle>
-            <Footprints className="h-8 w-8 text-primary" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{stepsData.current.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-                Target: {stepsData.goal.toLocaleString()} steps
-            </p>
-            <Progress value={stepProgress} className="mt-4 h-2" />
-        </CardContent>
-      </Card>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                    Today's Footsteps
+                </CardTitle>
+                <Footprints className="h-8 w-8 text-primary" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{stepsData.current.toLocaleString()}</div>
+                <p className="text-xs text-muted-foreground">
+                    Target: {stepsData.goal.toLocaleString()} steps
+                </p>
+                <Progress value={stepProgress} className="mt-4 h-2" />
+            </CardContent>
+        </Card>
         {mainStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
