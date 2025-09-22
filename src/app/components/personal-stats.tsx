@@ -30,6 +30,7 @@ export default function PersonalStats() {
   const [lastUpdated, setLastUpdated] = useState("");
 
   useEffect(() => {
+    // This now runs only on the client, avoiding the hydration error.
     setLastUpdated(format(new Date(), "PPP"));
   }, []);
 
