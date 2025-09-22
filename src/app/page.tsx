@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues } from "@/lib/types";
@@ -13,6 +13,7 @@ import WorkoutForm from "@/app/components/workout-form";
 import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
+import PersonalStats from "./components/personal-stats";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -105,6 +106,12 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="container mx-auto p-4 md:p-8 pb-32">
+        {!showHistory && (
+          <div className="space-y-8">
+            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <PersonalStats />
+          </div>
+        )}
         {showHistory && (
           <div className="mt-8">
             <Card className="shadow-lg">

@@ -14,7 +14,8 @@ export default function FloatingMenu({ onOpenAddForm, onShowHistory }: FloatingM
 
   const handleHomeClick = () => {
     setActiveButton("home");
-    onShowHistory();
+    // This will toggle the history view off, showing the home content.
+    onShowHistory(); 
   };
 
   const handleHistoryClick = () => {
