@@ -30,7 +30,7 @@ export default function PersonalStats() {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {mainStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -41,14 +41,14 @@ export default function PersonalStats() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground pt-2">
+              <p className="pt-2 text-xs text-muted-foreground">
                 Last updated: {lastUpdated}
               </p>
             </CardContent>
           </Card>
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-4 mt-4">
+      <div className="mt-4 grid grid-cols-1 gap-4">
         {secondaryStats.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -59,7 +59,7 @@ export default function PersonalStats() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground pt-2">
+              <p className="pt-2 text-xs text-muted-foreground">
                 Last updated: {lastUpdated}
               </p>
             </CardContent>
