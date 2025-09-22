@@ -6,7 +6,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase
 import { db } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
-import { Filter, History, Loader2 } from "lucide-react";
+import { Filter, Home as HomeIcon, Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
 import WorkoutForm from "@/app/components/workout-form";
@@ -105,7 +105,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="container mx-auto p-4 md:p-8 pb-32">
-        <div ref={historyRef} className="lg:col-span-2 mt-8 lg:mt-0">
+        <div ref={historyRef} className="mt-8">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function Home() {
         </div>
       </main>
 
-      <FloatingMenu onOpenAddForm={handleOpenAddForm} onShowHistory={handleShowHistory} />
+      <FloatingMenu onOpenAddForm={handleOpenAddForm} onShowHome={handleShowHistory} />
 
       <WorkoutForm
         isOpen={isFormOpen}

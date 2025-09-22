@@ -1,24 +1,24 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { History, Plus } from "lucide-react";
+import { Home, Plus } from "lucide-react";
 
 interface FloatingMenuProps {
   onOpenAddForm: () => void;
-  onShowHistory: () => void;
+  onShowHome: () => void;
 }
 
-export default function FloatingMenu({ onOpenAddForm, onShowHistory }: FloatingMenuProps) {
+export default function FloatingMenu({ onOpenAddForm, onShowHome }: FloatingMenuProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 p-4 flex justify-center pointer-events-none">
       <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-secondary/90 p-2 shadow-2xl shadow-primary/30 backdrop-blur-sm">
         <Button
-          onClick={onShowHistory}
+          onClick={onShowHome}
           variant="ghost"
-          className="rounded-full h-14 w-14"
+          className="rounded-full h-14 w-14 bg-primary/20 text-primary"
         >
-          <History className="h-7 w-7" />
-          <span className="sr-only">History</span>
+          <Home className="h-7 w-7" />
+          <span className="sr-only">Home</span>
         </Button>
         <Button
           onClick={onOpenAddForm}
