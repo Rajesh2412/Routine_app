@@ -2,44 +2,38 @@
 
 import { Button } from "@/components/ui/button";
 import { Home, Plus, History, GlassWater } from "lucide-react";
-import { useState } from "react";
 
 interface FloatingMenuProps {
   onOpenAddForm: () => void;
   onShowHistory: () => void;
+  onShowHome: () => void;
   onOpenWaterForm: () => void;
+  showHistory: boolean;
 }
 
-export default function FloatingMenu({ onOpenAddForm, onShowHistory, onOpenWaterForm }: FloatingMenuProps) {
-  const [activeButton, setActiveButton] = useState("home");
-
-  const handleHomeClick = () => {
-    setActiveButton("home");
-    // This will toggle the history view off, showing the home content.
-    onShowHistory(); 
-  };
-
-  const handleHistoryClick = () => {
-    setActiveButton("history");
-    onShowHistory();
-  };
-
+export default function FloatingMenu({ 
+    onOpenAddForm, 
+    onShowHistory, 
+    onShowHome,
+    onOpenWaterForm,
+    showHistory 
+}: FloatingMenuProps) {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 p-4 flex justify-center pointer-events-none">
       <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-secondary/90 p-2 shadow-2xl shadow-primary/30 backdrop-blur-sm">
         <Button
-          onClick={handleHomeClick}
+          onClick={onShowHome}
           variant="ghost"
-          className={`rounded-full h-14 w-14 ${activeButton === 'home' ? 'bg-primary/20 text-primary' : ''}`}
+          className={`rounded-full h-14 w-14 ${!showHistory ? 'bg-primary/20 text-primary' : ''}`}
         >
           <Home className="h-7 w-7" />
           <span className="sr-only">Home</span>
         </Button>
         <Button
-          onClick={handleHistoryClick}
+          onClick={onShowHistory}
           variant="ghost"
-          className={`rounded-full h-14 w-14 ${activeButton === 'history' ? 'bg-primary/20 text-primary' : ''}`}
+          className={`rounded-full h-14 w-14 ${showHistory ? 'bg-primary/20 text-primary' : ''}`}
         >
           <History className="h-7 w-7" />
           <span className="sr-only">History</span>

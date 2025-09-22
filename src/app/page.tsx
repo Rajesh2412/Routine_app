@@ -130,10 +130,6 @@ export default function Home() {
     setIsFormOpen(true);
   };
 
-  const handleShowHistory = (show: boolean) => {
-    setShowHistory(show);
-  };
-
   const filteredWorkouts = useMemo(() => {
     if (filter === "All") {
       return workouts;
@@ -147,14 +143,13 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="container mx-auto p-4 md:p-8 pb-32">
-        {!showHistory && (
+        {!showHistory ? (
           <div className="space-y-8">
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
             <PersonalStats />
             <WaterIntakeChart waterIntakeData={waterIntakeData}/>
           </div>
-        )}
-        {showHistory && (
+        ) : (
           <div className="mt-8">
             <Card className="shadow-lg">
               <CardHeader>
@@ -190,8 +185,10 @@ export default function Home() {
 
       <FloatingMenu
         onOpenAddForm={handleOpenAddForm}
-        onShowHistory={() => handleShowHistory(!showHistory)}
+        onShowHistory={() => setShowHistory(true)}
+        onShowHome={() => setShowHistory(false)}
         onOpenWaterForm={() => setIsWaterFormOpen(true)}
+        showHistory={showHistory}
       />
 
       <WorkoutForm
