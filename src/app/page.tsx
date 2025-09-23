@@ -28,47 +28,6 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
 
-  useEffect(() => {
-    const fetchWaterIntakeData = async () => {
-      const db = await getDb();
-      const today = new Date();
-      const last7Days: WaterIntakeData[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = subDays(today, i);
-        const dateString = format(date, "yyyy-MM-dd");
-        const docRef = doc(db, "waterIntake", dateString);
-        const docSnap = await getDoc(docRef);
-
-        last7Days.push({
-          date: format(date, 'EEE'),
-          intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
-        });
-      }
-      setWaterIntakeData(last7Days);
-    };
-
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const db = await getDb();
-        const querySnapshot = await getDocs(collection(db, "workouts"));
-        const workoutsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Workout[];
-        setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        
-        await fetchWaterIntakeData();
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const fetchWaterIntakeData = useCallback(async () => {
     const db = await getDb();
     const today = new Date();
@@ -86,6 +45,29 @@ export default function Home() {
     }
     setWaterIntakeData(last7Days);
   }, []);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const db = await getDb();
+      const querySnapshot = await getDocs(collection(db, "workouts"));
+      const workoutsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Workout[];
+      setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      
+      await fetchWaterIntakeData();
+    } catch (error) {
+      console.error("Error fetching data: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchWaterIntakeData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
