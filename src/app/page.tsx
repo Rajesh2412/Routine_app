@@ -48,7 +48,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const fetchWorkouts = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
         const db = await getDb();
         const querySnapshot = await getDocs(collection(db, "workouts"));
@@ -57,15 +58,16 @@ export default function Home() {
           ...doc.data(),
         })) as Workout[];
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        
+        await fetchWaterIntakeData();
       } catch (error) {
-        console.error("Error fetching workouts: ", error);
+        console.error("Error fetching data: ", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchWorkouts();
-    fetchWaterIntakeData();
+    fetchData();
   }, []);
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -145,48 +147,56 @@ export default function Home() {
 
   const allFilters = useMemo(() => ["All", ...BODY_PARTS], []);
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-48">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+    if (showHistory) {
+      return (
+        <div className="mt-8">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History /> Workout History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Filter size={20} /> Filter by Body Part</h3>
+                <WorkoutFilters
+                  bodyParts={allFilters}
+                  currentFilter={filter}
+                  onFilterChange={setFilter}
+                />
+              </div>
+              <WorkoutHistory
+                workouts={filteredWorkouts}
+                onEdit={handleOpenEditForm}
+                onDelete={handleDeleteWorkout}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-8">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <PersonalStats />
+        <WaterIntakeChart waterIntakeData={waterIntakeData}/>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="container mx-auto p-4 md:p-8 pb-32">
-        {showHistory ? (
-          <div className="mt-8">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History /> Workout History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold flex items-center gap-2 mb-2"><Filter size={20} /> Filter by Body Part</h3>
-                  <WorkoutFilters
-                    bodyParts={allFilters}
-                    currentFilter={filter}
-                    onFilterChange={setFilter}
-                  />
-                </div>
-                {isLoading ? (
-                    <div className="flex justify-center items-center h-48">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
-                ) : (
-                    <WorkoutHistory
-                      workouts={filteredWorkouts}
-                      onEdit={handleOpenEditForm}
-                      onDelete={handleDeleteWorkout}
-                    />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <PersonalStats />
-            <WaterIntakeChart waterIntakeData={waterIntakeData}/>
-          </div>
-        )}
+        {renderContent()}
       </main>
 
       <FloatingMenu
