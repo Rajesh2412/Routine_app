@@ -54,10 +54,8 @@ export default function Home() {
     const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        // Ensure DB is ready before fetching any data
         const db = await getDb(); 
         
-        // Fetch workouts
         const querySnapshot = await getDocs(collection(db, "workouts"));
         const workoutsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -65,7 +63,6 @@ export default function Home() {
         })) as Workout[];
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
         
-        // Fetch water intake data
         await fetchWaterIntakeData();
       } catch (error) {
         console.error("Error fetching initial data: ", error);
@@ -115,7 +112,6 @@ export default function Home() {
     try {
       const db = await getDb();
       const workoutRef = doc(db, "workouts", workout.id);
-      // We don't want to save the id field inside the document
       const { id, ...workoutData } = workout;
       await updateDoc(workoutRef, workoutData);
       setWorkouts((prev) =>
