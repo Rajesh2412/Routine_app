@@ -46,28 +46,28 @@ export default function Home() {
     setWaterIntakeData(last7Days);
   }, []);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const db = await getDb();
-      const querySnapshot = await getDocs(collection(db, "workouts"));
-      const workoutsData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Workout[];
-      setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      
-      await fetchWaterIntakeData();
-    } catch (error) {
-      console.error("Error fetching data: ", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchWaterIntakeData]);
-
   useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const db = await getDb();
+        const querySnapshot = await getDocs(collection(db, "workouts"));
+        const workoutsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Workout[];
+        setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        
+        await fetchWaterIntakeData();
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchData();
-  }, [fetchData]);
+  }, [fetchWaterIntakeData]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
