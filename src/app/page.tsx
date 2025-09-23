@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { getDb } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
@@ -28,26 +28,25 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
 
-
-  const fetchWaterIntakeData = async () => {
-    const db = await getDb();
-    const today = new Date();
-    const last7Days: WaterIntakeData[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(today, i);
-      const dateString = format(date, "yyyy-MM-dd");
-      const docRef = doc(db, "waterIntake", dateString);
-      const docSnap = await getDoc(docRef);
-      
-      last7Days.push({
-        date: format(date, 'EEE'),
-        intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
-      });
-    }
-    setWaterIntakeData(last7Days);
-  };
-
   useEffect(() => {
+    const fetchWaterIntakeData = async () => {
+      const db = await getDb();
+      const today = new Date();
+      const last7Days: WaterIntakeData[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = subDays(today, i);
+        const dateString = format(date, "yyyy-MM-dd");
+        const docRef = doc(db, "waterIntake", dateString);
+        const docSnap = await getDoc(docRef);
+
+        last7Days.push({
+          date: format(date, 'EEE'),
+          intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
+        });
+      }
+      setWaterIntakeData(last7Days);
+    };
+
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -69,6 +68,25 @@ export default function Home() {
 
     fetchData();
   }, []);
+
+  const fetchWaterIntakeData = useCallback(async () => {
+    const db = await getDb();
+    const today = new Date();
+    const last7Days: WaterIntakeData[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(today, i);
+      const dateString = format(date, "yyyy-MM-dd");
+      const docRef = doc(db, "waterIntake", dateString);
+      const docSnap = await getDoc(docRef);
+      
+      last7Days.push({
+        date: format(date, 'EEE'),
+        intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
+      });
+    }
+    setWaterIntakeData(last7Days);
+  }, []);
+
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
     const newWorkout = {
