@@ -29,21 +29,25 @@ export default function Home() {
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
 
   const fetchWaterIntakeData = useCallback(async () => {
-    const db = await getDb();
-    const today = new Date();
-    const last7Days: WaterIntakeData[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(today, i);
-      const dateString = format(date, "yyyy-MM-dd");
-      const docRef = doc(db, "waterIntake", dateString);
-      const docSnap = await getDoc(docRef);
-      
-      last7Days.push({
-        date: format(date, 'EEE'),
-        intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
-      });
+    try {
+      const db = await getDb();
+      const today = new Date();
+      const last7Days: WaterIntakeData[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = subDays(today, i);
+        const dateString = format(date, "yyyy-MM-dd");
+        const docRef = doc(db, "waterIntake", dateString);
+        const docSnap = await getDoc(docRef);
+        
+        last7Days.push({
+          date: format(date, 'EEE'),
+          intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
+        });
+      }
+      setWaterIntakeData(last7Days);
+    } catch (error) {
+      console.error("Error fetching water intake data: ", error);
     }
-    setWaterIntakeData(last7Days);
   }, []);
 
   useEffect(() => {
@@ -85,19 +89,19 @@ export default function Home() {
   };
 
   const handleAddWater = async (quantity: number) => {
-    const db = await getDb();
-    const today = new Date();
-    const dateString = format(today, "yyyy-MM-dd");
-    const docRef = doc(db, "waterIntake", dateString);
-
     try {
-        const docSnap = await getDoc(docRef);
-        let newTotal = quantity / 1000; // Convert ml to L
-        if (docSnap.exists()) {
-            newTotal += docSnap.data().totalIntake;
-        }
-        await setDoc(docRef, { totalIntake: newTotal, date: today.toISOString() });
-        fetchWaterIntakeData(); // Refresh chart data
+      const db = await getDb();
+      const today = new Date();
+      const dateString = format(today, "yyyy-MM-dd");
+      const docRef = doc(db, "waterIntake", dateString);
+
+      const docSnap = await getDoc(docRef);
+      let newTotal = quantity / 1000; // Convert ml to L
+      if (docSnap.exists()) {
+          newTotal += docSnap.data().totalIntake;
+      }
+      await setDoc(docRef, { totalIntake: newTotal, date: today.toISOString() });
+      await fetchWaterIntakeData(); // Refresh chart data
     } catch (error) {
         console.error("Error updating water intake: ", error);
     }
