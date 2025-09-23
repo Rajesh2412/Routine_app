@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getDb } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
-import { Filter, Loader2, History, GlassWater } from "lucide-react";
+import { Filter, Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
 import WorkoutForm from "@/app/components/workout-form";
@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
   const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
@@ -34,6 +35,47 @@ export default function Home() {
     getDb().then(() => setIsDbReady(true));
   }, []);
   
+  const fetchWaterIntakeData = useCallback(async () => {
+    try {
+      const db = await getDb();
+      const today = startOfDay(new Date());
+      const weekAgo = subDays(today, 6);
+      
+      const q = query(
+        collection(db, "waterIntake"),
+        where("date", ">=", format(weekAgo, "yyyy-MM-dd")),
+        where("date", "<=", format(today, "yyyy-MM-dd"))
+      );
+
+      const querySnapshot = await getDocs(q);
+      const fetchedData: { [key: string]: number } = {};
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        fetchedData[data.date] = data.intake;
+      });
+
+      const last7DaysData: WaterIntakeData[] = Array.from({ length: 7 }).map((_, i) => {
+        const date = subDays(today, 6 - i);
+        const dateString = format(date, "yyyy-MM-dd");
+        const dayName = format(date, "E");
+        return {
+          date: dayName,
+          intake: fetchedData[dateString] || 0,
+        };
+      });
+
+      setWaterIntakeData(last7DaysData);
+
+    } catch (error) {
+      console.error("Error fetching water intake data: ", error);
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not load water intake data.",
+      });
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (!isDbReady) return;
 
@@ -41,18 +83,21 @@ export default function Home() {
       setIsLoading(true);
       try {
         const db = await getDb();
-        const querySnapshot = await getDocs(collection(db, "workouts"));
-        const workoutsData = querySnapshot.docs.map((doc) => ({
+        const workoutsQuerySnapshot = await getDocs(collection(db, "workouts"));
+        const workoutsData = workoutsQuerySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         })) as Workout[];
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        
+        await fetchWaterIntakeData();
+
       } catch (error) {
         console.error("Error fetching initial data: ", error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Could not load workout data.",
+          description: "Could not load initial app data.",
         });
       } finally {
         setIsLoading(false);
@@ -60,7 +105,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [isDbReady, toast]);
+  }, [isDbReady, toast, fetchWaterIntakeData]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -153,6 +198,7 @@ export default function Home() {
         title: "Success",
         description: `${quantity}ml of water logged.`,
       });
+      await fetchWaterIntakeData(); // Refresh chart data
     } catch (error) {
        console.error("Error adding water intake: ", error);
        toast({
@@ -222,7 +268,7 @@ export default function Home() {
       <div className="space-y-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <PersonalStats />
-        <WaterIntakeChart />
+        <WaterIntakeChart data={waterIntakeData} />
       </div>
     );
   };

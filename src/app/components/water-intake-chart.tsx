@@ -19,33 +19,43 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { GlassWater } from "lucide-react";
+import { GlassWater, Loader2 } from "lucide-react";
 import type { WaterIntakeData } from "@/lib/types";
 import { useMemo } from "react";
 
 const dailyGoal = 3; // in Liters
 
-const exampleWaterIntakeData: WaterIntakeData[] = [
-  { date: "Mon", intake: 1.5 },
-  { date: "Tue", intake: 2.1 },
-  { date: "Wed", intake: 1.8 },
-  { date: "Thu", intake: 2.5 },
-  { date: "Fri", intake: 2.0 },
-  { date: "Sat", intake: 2.8 },
-  { date: "Sun", intake: 1.2 },
-];
+interface WaterIntakeChartProps {
+  data: WaterIntakeData[];
+}
 
-export default function WaterIntakeChart() {
-  const today = useMemo(() => new Date(), []);
-  const todayString = useMemo(() => today.toLocaleDateString('en-US', { weekday: 'short' }), [today]);
-
-  const todayData = useMemo(() => exampleWaterIntakeData.find(d => d.date === todayString) || exampleWaterIntakeData[exampleWaterIntakeData.length - 1], [todayString]);
+export default function WaterIntakeChart({ data }: WaterIntakeChartProps) {
+  const todayData = useMemo(() => data.length > 0 ? data[data.length - 1] : { intake: 0 }, [data]);
   const todayIntake = todayData.intake;
   
   const progress = Math.round((todayIntake / dailyGoal) * 100);
   const remainingIntake = Math.max(0, dailyGoal - todayIntake);
 
   const radialData = [{ name: "Today", value: progress, fill: "hsl(var(--primary))" }];
+
+  if (data.length === 0) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <GlassWater className="h-6 w-6 text-primary" />
+                    Water Intake
+                </CardTitle>
+                <CardDescription>
+                    Your water consumption for the last 7 days.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center h-[250px]">
+                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </CardContent>
+        </Card>
+    )
+  }
 
   return (
     <Card>
@@ -62,7 +72,7 @@ export default function WaterIntakeChart() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-2 h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={exampleWaterIntakeData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+              <BarChart data={data} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIntake" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
