@@ -1,13 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Home, Plus, History, GlassWater } from "lucide-react";
+import { Home, Plus, History } from "lucide-react";
 
 interface FloatingMenuProps {
   onOpenAddForm: () => void;
   onShowHistory: () => void;
   onShowHome: () => void;
-  onOpenWaterForm: () => void;
   showHistory: boolean;
 }
 
@@ -15,7 +14,6 @@ export default function FloatingMenu({
     onOpenAddForm, 
     onShowHistory, 
     onShowHome,
-    onOpenWaterForm,
     showHistory 
 }: FloatingMenuProps) {
 
@@ -37,14 +35,6 @@ export default function FloatingMenu({
         >
           <History className="h-7 w-7" />
           <span className="sr-only">History</span>
-        </Button>
-        <Button
-          onClick={onOpenWaterForm}
-          variant="ghost"
-          className="rounded-full h-14 w-14"
-        >
-          <GlassWater className="h-7 w-7 text-blue-400" />
-          <span className="sr-only">Log Water</span>
         </Button>
         <Button
           onClick={onOpenAddForm}

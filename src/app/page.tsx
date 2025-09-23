@@ -2,9 +2,9 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { getDb } from "@/app/lib/firebase";
-import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
+import type { Workout, WorkoutFormValues } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
 import { Filter, Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
@@ -14,45 +14,18 @@ import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
-import WaterIntakeChart from "./components/water-intake-chart";
-import WaterIntakeForm from "./components/water-intake-form";
-import { format, subDays } from "date-fns";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
   const [isDbReady, setIsDbReady] = useState(false);
 
   useEffect(() => {
     getDb().then(() => setIsDbReady(true));
-  }, []);
-
-  const fetchWaterIntakeData = useCallback(async () => {
-    try {
-      const db = await getDb();
-      const today = new Date();
-      const last7Days: WaterIntakeData[] = [];
-      for (let i = 6; i >= 0; i--) {
-        const date = subDays(today, i);
-        const dateString = format(date, "yyyy-MM-dd");
-        const docRef = doc(db, "waterIntake", dateString);
-        const docSnap = await getDoc(docRef);
-        
-        last7Days.push({
-          date: format(date, 'EEE'),
-          intake: docSnap.exists() ? docSnap.data().totalIntake : 0,
-        });
-      }
-      setWaterIntakeData(last7Days);
-    } catch (error) {
-      console.error("Error fetching water intake data: ", error);
-    }
   }, []);
 
   useEffect(() => {
@@ -69,7 +42,6 @@ export default function Home() {
         })) as Workout[];
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
         
-        await fetchWaterIntakeData();
       } catch (error) {
         console.error("Error fetching initial data: ", error);
       } finally {
@@ -78,7 +50,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [isDbReady, fetchWaterIntakeData]);
+  }, [isDbReady]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -92,25 +64,6 @@ export default function Home() {
       setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev]);
     } catch (error) {
       console.error("Error adding workout: ", error);
-    }
-  };
-
-  const handleAddWater = async (quantity: number) => {
-    try {
-      const db = await getDb();
-      const today = new Date();
-      const dateString = format(today, "yyyy-MM-dd");
-      const docRef = doc(db, "waterIntake", dateString);
-
-      const docSnap = await getDoc(docRef);
-      let newTotal = quantity / 1000; // Convert ml to L
-      if (docSnap.exists()) {
-          newTotal += docSnap.data().totalIntake;
-      }
-      await setDoc(docRef, { totalIntake: newTotal, date: today.toISOString() });
-      await fetchWaterIntakeData(); // Refresh chart data
-    } catch (error) {
-        console.error("Error updating water intake: ", error);
     }
   };
 
@@ -197,7 +150,6 @@ export default function Home() {
       <div className="space-y-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <PersonalStats />
-        <WaterIntakeChart waterIntakeData={waterIntakeData}/>
       </div>
     );
   };
@@ -213,7 +165,6 @@ export default function Home() {
         onOpenAddForm={handleOpenAddForm}
         onShowHistory={() => setShowHistory(true)}
         onShowHome={() => setShowHistory(false)}
-        onOpenWaterForm={() => setIsWaterFormOpen(true)}
         showHistory={showHistory}
       />
 
@@ -223,12 +174,6 @@ export default function Home() {
         addWorkout={handleAddWorkout}
         updateWorkout={handleUpdateWorkout}
         editingWorkout={editingWorkout}
-      />
-
-      <WaterIntakeForm
-        isOpen={isWaterFormOpen}
-        setIsOpen={setIsWaterFormOpen}
-        addWater={handleAddWater}
       />
     </div>
   );
