@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   projectId: 'studio-360945248-2435a',
@@ -12,19 +12,52 @@ const firebaseConfig = {
   messagingSenderId: '866067498857',
 };
 
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
+let db: Firestore;
+let dbPromise: Promise<Firestore>;
 
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code == 'failed-precondition') {
-    // Multiple tabs open, persistence can only be enabled in one tab at a time.
-    // ...
-  } else if (err.code == 'unimplemented') {
-    // The current browser does not support all of the features required to enable persistence
-    // ...
+const initializeDb = () => {
+  if (dbPromise) {
+    return dbPromise;
   }
-});
+  
+  dbPromise = new Promise((resolve, reject) => {
+    try {
+      const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+      const firestore = getFirestore(app);
 
+      enableIndexedDbPersistence(firestore)
+        .then(() => {
+          db = firestore;
+          resolve(db);
+        })
+        .catch((err) => {
+          if (err.code == 'failed-precondition') {
+            // Multiple tabs open, persistence can only be enabled in one tab at a time.
+            // This is a normal scenario, so we can resolve with the existing instance.
+            db = firestore;
+            resolve(db);
+          } else if (err.code == 'unimplemented') {
+            // The current browser does not support all of the features required to enable persistence
+            console.warn("Firebase persistence not available in this browser.");
+            db = firestore;
+            resolve(db);
+          } else {
+            console.error("Error enabling Firebase persistence:", err);
+            reject(err);
+          }
+        });
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+      reject(error);
+    }
+  });
+  
+  return dbPromise;
+};
 
-export { db };
+export const getDb = async () => {
+  if (db) {
+    return db;
+  }
+  return initializeDb();
+};

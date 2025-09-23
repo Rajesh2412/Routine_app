@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/app/lib/firebase";
+import { getDb } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
 import { Filter, Home as HomeIcon, Loader2, History } from "lucide-react";
@@ -30,6 +30,7 @@ export default function Home() {
 
 
   const fetchWaterIntakeData = async () => {
+    const db = await getDb();
     const today = new Date();
     const last7Days: WaterIntakeData[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -49,6 +50,7 @@ export default function Home() {
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
+        const db = await getDb();
         const querySnapshot = await getDocs(collection(db, "workouts"));
         const workoutsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -72,6 +74,7 @@ export default function Home() {
       date: new Date().toISOString(),
     };
     try {
+      const db = await getDb();
       const docRef = await addDoc(collection(db, "workouts"), newWorkout);
       setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev]);
     } catch (error) {
@@ -80,6 +83,7 @@ export default function Home() {
   };
 
   const handleAddWater = async (quantity: number) => {
+    const db = await getDb();
     const today = new Date();
     const dateString = format(today, "yyyy-MM-dd");
     const docRef = doc(db, "waterIntake", dateString);
@@ -99,6 +103,7 @@ export default function Home() {
 
   const handleUpdateWorkout = async (workout: Workout) => {
     try {
+      const db = await getDb();
       const workoutRef = doc(db, "workouts", workout.id);
       // We don't want to save the id field inside the document
       const { id, ...workoutData } = workout;
@@ -113,6 +118,7 @@ export default function Home() {
 
   const handleDeleteWorkout = async (id: string) => {
     try {
+      const db = await getDb();
       await deleteDoc(doc(db, "workouts", id));
       setWorkouts((prev) => prev.filter((w) => w.id !== id));
     } catch (error) {
