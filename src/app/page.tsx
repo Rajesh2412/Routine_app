@@ -15,12 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "./components/water-intake-chart";
+import WaterIntakeForm from "./components/water-intake-form";
 import { format, subDays } from "date-fns";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [filter, setFilter] = useState<string>("All");
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
+  const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -91,15 +93,20 @@ export default function Home() {
       console.error("Error deleting workout: ", error);
     }
   };
+
+  const handleAddWater = (quantity: number) => {
+    console.log(`Adding ${quantity}ml of water`);
+    // Will connect to DB later
+  };
   
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
-    setIsFormOpen(true);
+    setIsWorkoutFormOpen(true);
   };
   
   const handleOpenAddForm = () => {
     setEditingWorkout(null);
-    setIsFormOpen(true);
+    setIsWorkoutFormOpen(true);
   };
 
   const filteredWorkouts = useMemo(() => {
@@ -168,14 +175,20 @@ export default function Home() {
         onShowHistory={() => setShowHistory(true)}
         onShowHome={() => setShowHistory(false)}
         showHistory={showHistory}
+        onOpenWaterForm={() => setIsWaterFormOpen(true)}
       />
 
       <WorkoutForm
-        isOpen={isFormOpen}
-        setIsOpen={setIsFormOpen}
+        isOpen={isWorkoutFormOpen}
+        setIsOpen={setIsWorkoutFormOpen}
         addWorkout={handleAddWorkout}
         updateWorkout={handleUpdateWorkout}
         editingWorkout={editingWorkout}
+      />
+      <WaterIntakeForm 
+        isOpen={isWaterFormOpen}
+        setIsOpen={setIsWaterFormOpen}
+        addWater={handleAddWater}
       />
     </div>
   );
