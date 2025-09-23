@@ -34,7 +34,7 @@ export default function Home() {
   useEffect(() => {
     getDb().then(() => setIsDbReady(true));
   }, []);
-  
+
   const fetchWaterIntakeData = useCallback(async () => {
     try {
       const db = await getDb();
@@ -303,5 +303,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
