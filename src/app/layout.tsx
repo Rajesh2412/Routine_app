@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 export const metadata: Metadata = {
   title: "RajEsh's workout routine",
   description: 'A personalized workout journal app to track daily exercise details.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
