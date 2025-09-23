@@ -51,7 +51,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
       try {
         const db = await getDb();
@@ -70,7 +70,7 @@ export default function Home() {
       }
     };
 
-    fetchData();
+    fetchInitialData();
   }, [fetchWaterIntakeData]);
 
 
