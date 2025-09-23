@@ -15,15 +15,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "./components/water-intake-chart";
-import WaterIntakeForm from "./components/water-intake-form";
 import { format, subDays } from "date-fns";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
   const [filter, setFilter] = useState<string>("All");
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -32,23 +29,7 @@ export default function Home() {
   useEffect(() => {
     getDb().then(() => setIsDbReady(true));
   }, []);
-
-  const fetchWaterIntakeData = useCallback(async () => {
-    const db = await getDb();
-    const weekData: WaterIntakeData[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const date = subDays(new Date(), i);
-      const docId = format(date, "yyyy-MM-dd");
-      const docRef = doc(db, "waterIntake", docId);
-      const docSnap = await getDoc(docRef);
-      weekData.push({
-        date: format(date, "EEE"),
-        intake: docSnap.exists() ? docSnap.data().total / 1000 : 0,
-      });
-    }
-    setWaterIntakeData(weekData);
-  }, []);
-
+  
   useEffect(() => {
     if (!isDbReady) return;
 
@@ -62,7 +43,6 @@ export default function Home() {
           ...doc.data(),
         })) as Workout[];
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        await fetchWaterIntakeData();
       } catch (error) {
         console.error("Error fetching initial data: ", error);
       } finally {
@@ -71,7 +51,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [isDbReady, fetchWaterIntakeData]);
+  }, [isDbReady]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -112,21 +92,6 @@ export default function Home() {
     }
   };
   
-  const handleAddWater = async (quantity: number) => {
-    const today = new Date();
-    const docId = format(today, "yyyy-MM-dd");
-    try {
-      const db = await getDb();
-      const docRef = doc(db, "waterIntake", docId);
-      const docSnap = await getDoc(docRef);
-      const currentTotal = docSnap.exists() ? docSnap.data().total : 0;
-      await setDoc(docRef, { total: currentTotal + quantity });
-      await fetchWaterIntakeData();
-    } catch (error) {
-      console.error("Error adding water intake: ", error);
-    }
-  };
-
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
     setIsFormOpen(true);
@@ -186,7 +151,7 @@ export default function Home() {
       <div className="space-y-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <PersonalStats />
-        <WaterIntakeChart waterIntakeData={waterIntakeData} />
+        <WaterIntakeChart />
       </div>
     );
   };
@@ -203,7 +168,6 @@ export default function Home() {
         onShowHistory={() => setShowHistory(true)}
         onShowHome={() => setShowHistory(false)}
         showHistory={showHistory}
-        onOpenWaterForm={() => setIsWaterFormOpen(true)}
       />
 
       <WorkoutForm
@@ -212,11 +176,6 @@ export default function Home() {
         addWorkout={handleAddWorkout}
         updateWorkout={handleUpdateWorkout}
         editingWorkout={editingWorkout}
-      />
-      <WaterIntakeForm
-        isOpen={isWaterFormOpen}
-        setIsOpen={setIsWaterFormOpen}
-        addWater={handleAddWater}
       />
     </div>
   );

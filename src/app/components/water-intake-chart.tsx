@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -20,19 +21,26 @@ import {
 } from "@/components/ui/card";
 import { GlassWater } from "lucide-react";
 import type { WaterIntakeData } from "@/lib/types";
-
-interface WaterIntakeChartProps {
-  waterIntakeData: WaterIntakeData[];
-}
+import { useMemo } from "react";
 
 const dailyGoal = 3; // in Liters
 
-export default function WaterIntakeChart({ waterIntakeData }: WaterIntakeChartProps) {
-  const today = new Date();
-  const todayString = today.toLocaleDateString('en-US', { weekday: 'short' });
+const exampleWaterIntakeData: WaterIntakeData[] = [
+  { date: "Mon", intake: 1.5 },
+  { date: "Tue", intake: 2.1 },
+  { date: "Wed", intake: 1.8 },
+  { date: "Thu", intake: 2.5 },
+  { date: "Fri", intake: 2.0 },
+  { date: "Sat", intake: 2.8 },
+  { date: "Sun", intake: 1.2 },
+];
 
-  const todayData = waterIntakeData.find(d => d.date === todayString);
-  const todayIntake = todayData ? todayData.intake : 0;
+export default function WaterIntakeChart() {
+  const today = useMemo(() => new Date(), []);
+  const todayString = useMemo(() => today.toLocaleDateString('en-US', { weekday: 'short' }), [today]);
+
+  const todayData = useMemo(() => exampleWaterIntakeData.find(d => d.date === todayString) || exampleWaterIntakeData[exampleWaterIntakeData.length - 1], [todayString]);
+  const todayIntake = todayData.intake;
   
   const progress = Math.round((todayIntake / dailyGoal) * 100);
   const remainingIntake = Math.max(0, dailyGoal - todayIntake);
@@ -54,7 +62,7 @@ export default function WaterIntakeChart({ waterIntakeData }: WaterIntakeChartPr
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-2 h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={waterIntakeData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+              <BarChart data={exampleWaterIntakeData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIntake" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
