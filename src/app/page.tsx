@@ -16,7 +16,8 @@ import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "./components/water-intake-chart";
 import WaterIntakeForm from "./components/water-intake-form";
-import { format, subDays } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -27,6 +28,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [isDbReady, setIsDbReady] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     getDb().then(() => setIsDbReady(true));
@@ -47,13 +49,18 @@ export default function Home() {
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       } catch (error) {
         console.error("Error fetching initial data: ", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not load workout data.",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchInitialData();
-  }, [isDbReady]);
+  }, [isDbReady, toast]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -65,8 +72,17 @@ export default function Home() {
       const db = await getDb();
       const docRef = await addDoc(collection(db, "workouts"), newWorkout);
       setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev]);
+       toast({
+        title: "Success",
+        description: "Workout logged successfully.",
+      });
     } catch (error) {
       console.error("Error adding workout: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not save workout.",
+      });
     }
   };
 
@@ -79,8 +95,17 @@ export default function Home() {
       setWorkouts((prev) =>
         prev.map((w) => (w.id === workout.id ? workout : w))
       );
+      toast({
+        title: "Success",
+        description: "Workout updated successfully.",
+      });
     } catch (error) {
       console.error("Error updating workout: ", error);
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not update workout.",
+      });
     }
   };
 
@@ -89,14 +114,53 @@ export default function Home() {
       const db = await getDb();
       await deleteDoc(doc(db, "workouts", id));
       setWorkouts((prev) => prev.filter((w) => w.id !== id));
+      toast({
+        title: "Success",
+        description: "Workout deleted.",
+      });
     } catch (error) {
       console.error("Error deleting workout: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not delete workout.",
+      });
     }
   };
 
-  const handleAddWater = (quantity: number) => {
-    console.log(`Adding ${quantity}ml of water`);
-    // Will connect to DB later
+  const handleAddWater = async (quantity: number) => {
+    const intakeInLiters = quantity / 1000;
+    const today = startOfDay(new Date());
+    const docId = format(today, "yyyy-MM-dd");
+
+    try {
+      const db = await getDb();
+      const docRef = doc(db, "waterIntake", docId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const currentIntake = docSnap.data().intake || 0;
+        await updateDoc(docRef, {
+          intake: currentIntake + intakeInLiters,
+        });
+      } else {
+        await setDoc(docRef, {
+          date: format(today, "yyyy-MM-dd"),
+          intake: intakeInLiters,
+        });
+      }
+      toast({
+        title: "Success",
+        description: `${quantity}ml of water logged.`,
+      });
+    } catch (error) {
+       console.error("Error adding water intake: ", error);
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not log water intake.",
+      });
+    }
   };
   
   const handleOpenEditForm = (workout: Workout) => {
