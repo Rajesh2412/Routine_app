@@ -27,6 +27,11 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
+  const [isDbReady, setIsDbReady] = useState(false);
+
+  useEffect(() => {
+    getDb().then(() => setIsDbReady(true));
+  }, []);
 
   const fetchWaterIntakeData = useCallback(async () => {
     try {
@@ -51,11 +56,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (!isDbReady) return;
+
     const fetchInitialData = async () => {
       setIsLoading(true);
       try {
-        const db = await getDb(); 
-        
+        const db = await getDb();
         const querySnapshot = await getDocs(collection(db, "workouts"));
         const workoutsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -72,7 +78,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [fetchWaterIntakeData]);
+  }, [isDbReady, fetchWaterIntakeData]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
