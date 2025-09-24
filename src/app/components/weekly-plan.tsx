@@ -55,27 +55,29 @@ export default function WeeklyPlan() {
 
     if (isMobile) {
       return (
-        <Carousel
-          opts={{
-            align: "start",
-            startIndex: weeklyPlanWithIcons.findIndex(d => d.day === currentDay),
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-             <TabsList className="grid w-full grid-cols-7 h-auto p-0 border-none bg-transparent">
-              {weeklyPlanWithIcons.map((item, index) => (
-                 <CarouselItem key={index} className="basis-1/4">
-                    <TabsTrigger key={item.day} value={item.day} className="py-2 w-full">
-                        {item.day.substring(0,3)}
-                    </TabsTrigger>
-                 </CarouselItem>
-              ))}
-             </TabsList>
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+        <div className="relative w-full overflow-hidden">
+          <Carousel
+            opts={{
+              align: "start",
+              startIndex: weeklyPlanWithIcons.findIndex(d => d.day === currentDay),
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+               <TabsList className="grid w-full grid-cols-7 h-auto p-0 border-none bg-transparent">
+                {weeklyPlanWithIcons.map((item, index) => (
+                   <CarouselItem key={index} className="basis-1/4">
+                      <TabsTrigger key={item.day} value={item.day} className="py-2 w-full">
+                          {item.day.substring(0,3)}
+                      </TabsTrigger>
+                   </CarouselItem>
+                ))}
+               </TabsList>
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
       );
     }
 
