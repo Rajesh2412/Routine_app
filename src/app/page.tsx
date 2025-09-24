@@ -277,6 +277,30 @@ export default function Home() {
     console.log("Syncing steps:", steps)
     // AI and DB logic to be added here.
   };
+
+  const handleUpdateSteps = async (newSteps: number) => {
+    if (!isDbReady || !dailyStats) {
+       toast({ variant: "destructive", title: "Database not ready or stats not loaded."});
+       return;
+    }
+    try {
+      const db = await getDb();
+      const docRef = doc(db, "dailyStats", dailyStats.id);
+      await updateDoc(docRef, { steps: newSteps });
+      setDailyStats(prev => prev ? { ...prev, steps: newSteps } : null);
+      toast({
+        title: "Success",
+        description: "Steps updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating steps:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not update steps.",
+      });
+    }
+  };
   
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
@@ -336,7 +360,11 @@ export default function Home() {
     return (
       <div className="space-y-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <PersonalStats stats={dailyStats} onSyncSteps={() => setIsStepsFormOpen(true)} />
+        <PersonalStats 
+          stats={dailyStats} 
+          onSyncSteps={() => setIsStepsFormOpen(true)}
+          onUpdateSteps={handleUpdateSteps}
+        />
         <WaterIntakeChart data={waterIntakeData} />
       </div>
     );

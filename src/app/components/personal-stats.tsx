@@ -1,9 +1,9 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { Footprints, Ruler, Weight, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import type { DailyStats } from "@/lib/types";
@@ -25,20 +25,44 @@ const mainStats = [
 interface PersonalStatsProps {
     stats: DailyStats | null;
     onSyncSteps: () => void;
+    onUpdateSteps: (newSteps: number) => void;
 }
 
 
-export default function PersonalStats({ stats, onSyncSteps }: PersonalStatsProps) {
+export default function PersonalStats({ stats, onSyncSteps, onUpdateSteps }: PersonalStatsProps) {
   const [lastUpdated, setLastUpdated] = useState("");
+  const [isEditingSteps, setIsEditingSteps] = useState(false);
+  const [editableSteps, setEditableSteps] = useState(stats?.steps || 0);
 
   useEffect(() => {
     // This now runs only on the client, avoiding the hydration error.
     setLastUpdated(format(new Date(), "PPP"));
   }, []);
 
+  useEffect(() => {
+    if (stats) {
+      setEditableSteps(stats.steps);
+    }
+  }, [stats]);
+
+
   const stepProgress = stats ? Math.round((stats.steps / stats.stepsGoal) * 100) : 0;
   const currentSteps = stats ? stats.steps : 0;
   const goalSteps = stats ? stats.stepsGoal : 8000;
+
+  const handleStepsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const newSteps = parseInt((e.target as HTMLInputElement).value, 10);
+      if (!isNaN(newSteps) && newSteps >= 0) {
+        onUpdateSteps(newSteps);
+        setIsEditingSteps(false);
+      }
+    } else if (e.key === 'Escape') {
+        setIsEditingSteps(false);
+        setEditableSteps(currentSteps); // Reset to original value
+    }
+  };
+
 
   return (
     <>
@@ -51,7 +75,24 @@ export default function PersonalStats({ stats, onSyncSteps }: PersonalStatsProps
                 <Footprints className="h-8 w-8 text-primary" />
             </CardHeader>
             <CardContent className="flex-grow">
-                <div className="text-2xl font-bold">{currentSteps.toLocaleString()}</div>
+                {isEditingSteps ? (
+                  <Input
+                    type="number"
+                    value={editableSteps}
+                    onChange={(e) => setEditableSteps(Number(e.target.value))}
+                    onKeyDown={handleStepsKeyDown}
+                    onBlur={() => setIsEditingSteps(false)}
+                    autoFocus
+                    className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                ) : (
+                <div 
+                  className="text-2xl font-bold cursor-pointer"
+                  onClick={() => setIsEditingSteps(true)}
+                >
+                  {currentSteps.toLocaleString()}
+                </div>
+                )}
                 <p className="text-xs text-muted-foreground">
                     Target: {goalSteps.toLocaleString()} steps
                 </p>
