@@ -3,9 +3,9 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
-import { getDb } from "@/app/lib/firebase";
+import { getDb } from "@/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
-import { BODY_PARTS } from "@/app/lib/data";
+import { BODY_PARTS } from "@/lib/data";
 import { Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
