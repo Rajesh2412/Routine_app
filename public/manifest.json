@@ -4,7 +4,7 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "RajEsh's workout routine",
+  "name": "RajEsh's Routine",
   "short_name": "WorkoutApp",
   "description": "A personalized workout journal app to track daily exercise details.",
   "icons": [

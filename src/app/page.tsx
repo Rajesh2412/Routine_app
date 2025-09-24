@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "./components/water-intake-chart";
-import WaterIntakeForm from "./components/water-intake-form";
+import WaterIntakeForm from "@/app/components/water-intake-form";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,8 +32,22 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    getDb().then(() => setIsDbReady(true));
-  }, []);
+    console.log("Attempting to initialize database...");
+    getDb()
+      .then(() => {
+        console.log("Database ready, client is online.");
+        setIsDbReady(true);
+      })
+      .catch((error) => {
+        console.error("!!! Failed to initialize database:", error);
+        toast({
+          variant: "destructive",
+          title: "Database Connection Error",
+          description: "Could not connect to Firestore. Please check console for details.",
+          duration: 10000,
+        });
+      });
+  }, [toast]);
 
   const fetchWaterIntakeData = useCallback(async () => {
     try {
@@ -126,7 +140,7 @@ export default function Home() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not save workout.",
+        description: "Could not save workout. Check console for details.",
       });
     }
   };
@@ -149,7 +163,7 @@ export default function Home() {
        toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not update workout.",
+        description: "Could not update workout. Check console for details.",
       });
     }
   };
@@ -168,7 +182,7 @@ export default function Home() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not delete workout.",
+        description: "Could not delete workout. Check console for details.",
       });
     }
   };
@@ -204,7 +218,7 @@ export default function Home() {
        toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not log water intake.",
+        description: "Could not log water intake. Check console for details.",
       });
     }
   };
@@ -229,7 +243,7 @@ export default function Home() {
   const allFilters = useMemo(() => ["All", ...BODY_PARTS], []);
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !isDbReady) {
       return (
         <div className="flex justify-center items-center h-48">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -303,3 +317,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
