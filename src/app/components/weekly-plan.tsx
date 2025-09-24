@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,7 +15,8 @@ import {
   CardTitle,
   CardDescription
 } from "@/components/ui/card";
-import { CalendarDays, Dumbbell, Coffee } from "lucide-react";
+import { CalendarDays, Dumbbell, Coffee, Play } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const weeklyPlan = [
   { day: "Sunday", focus: "Shoulders", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
@@ -78,6 +80,12 @@ export default function WeeklyPlan() {
                   {item.focus} Day
                 </p>
                  <p className="text-sm text-muted-foreground">{item.day}</p>
+                 {item.focus !== "Rest" && (
+                    <Button size="sm" className="mt-4">
+                        <Play className="mr-2 h-4 w-4" />
+                        Start
+                    </Button>
+                 )}
               </div>
             </TabsContent>
           ))}
