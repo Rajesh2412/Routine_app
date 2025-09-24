@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
-import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats, BodyPart } from "@/lib/types";
+import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats, BodyPart, UserProfile } from "@/lib/types";
 import { WEEKLY_PLAN } from "@/lib/data";
 import { Loader2, History, Filter } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
@@ -14,19 +14,20 @@ import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
-import WaterIntakeChart from "@/app/components/water-intake-chart";
+import WaterIntakeChart from "./components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import WeeklyPlan from "./components/weekly-plan";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
 const ALL_BODY_PARTS: BodyPart[] = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"];
-
+const USER_PROFILE_ID = "mainUser"; // Using a static ID for the single-user app
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
   const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
   const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
@@ -124,6 +125,35 @@ export default function Home() {
     }
 }, [isDbReady, toast]);
 
+const fetchUserProfile = useCallback(async () => {
+    if (!isDbReady) return;
+    try {
+        const db = await getDb();
+        const docRef = doc(db, "userProfile", USER_PROFILE_ID);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            setUserProfile(docSnap.data() as UserProfile);
+        } else {
+            const newUserProfile: UserProfile = {
+                id: USER_PROFILE_ID,
+                weight: "75 kg",
+                height: "180cm / 5'11\"",
+                lastUpdated: new Date().toISOString(),
+            }
+            await setDoc(docRef, newUserProfile);
+            setUserProfile(newUserProfile);
+        }
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load user profile.",
+        });
+    }
+}, [isDbReady, toast]);
+
 
   useEffect(() => {
     if (!isDbReady) return;
@@ -141,6 +171,7 @@ export default function Home() {
         
         await fetchWaterIntakeData();
         await fetchDailyStats();
+        await fetchUserProfile();
 
       } catch (error) {
         console.error("Error fetching initial data: ", error);
@@ -155,7 +186,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats]);
+  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats, fetchUserProfile]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -299,6 +330,30 @@ export default function Home() {
     }
   };
   
+    const handleUpdateProfile = async (data: Partial<UserProfile>) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
+    try {
+      const db = await getDb();
+      const docRef = doc(db, "userProfile", USER_PROFILE_ID);
+      await updateDoc(docRef, data);
+      setUserProfile(prev => prev ? { ...prev, ...data } : null);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not update profile.",
+      });
+    }
+  };
+
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
     setIsWorkoutFormOpen(true);
@@ -371,7 +426,9 @@ export default function Home() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <PersonalStats 
           stats={dailyStats} 
+          profile={userProfile}
           onUpdateSteps={handleUpdateSteps}
+          onUpdateProfile={handleUpdateProfile}
         />
         <WeeklyPlan />
         <WaterIntakeChart data={waterIntakeData} />

@@ -2,122 +2,186 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Footprints, Ruler, Weight } from "lucide-react";
 import { format } from "date-fns";
-import type { DailyStats } from "@/lib/types";
-
-const mainStats = [
-  {
-    title: "My Weight",
-    value: "75 kg",
-    icon: <Weight className="h-8 w-8 text-primary" />,
-  },
-  {
-    title: "My Height",
-    value: "180cm / 5'11\"",
-    icon: <Ruler className="h-8 w-8 text-primary" />,
-  },
-];
+import type { DailyStats, UserProfile } from "@/lib/types";
 
 interface PersonalStatsProps {
-    stats: DailyStats | null;
-    onUpdateSteps: (newSteps: number) => void;
+  stats: DailyStats | null;
+  profile: UserProfile | null;
+  onUpdateSteps: (newSteps: number) => void;
+  onUpdateProfile: (newProfile: Partial<UserProfile>) => void;
 }
 
-
-export default function PersonalStats({ stats, onUpdateSteps }: PersonalStatsProps) {
-  const [lastUpdated, setLastUpdated] = useState("");
+export default function PersonalStats({
+  stats,
+  profile,
+  onUpdateSteps,
+  onUpdateProfile,
+}: PersonalStatsProps) {
   const [isEditingSteps, setIsEditingSteps] = useState(false);
   const [editableSteps, setEditableSteps] = useState(stats?.steps || 0);
 
-  useEffect(() => {
-    // This now runs only on the client, avoiding the hydration error.
-    setLastUpdated(format(new Date(), "PPP"));
-  }, []);
+  const [isEditingWeight, setIsEditingWeight] = useState(false);
+  const [editableWeight, setEditableWeight] = useState(profile?.weight || "");
+  
+  const [isEditingHeight, setIsEditingHeight] = useState(false);
+  const [editableHeight, setEditableHeight] = useState(profile?.height || "");
 
   useEffect(() => {
     if (stats) {
       setEditableSteps(stats.steps);
     }
   }, [stats]);
+  
+  useEffect(() => {
+    if (profile) {
+      setEditableWeight(profile.weight);
+      setEditableHeight(profile.height);
+    }
+  }, [profile]);
 
-
-  const stepProgress = stats ? Math.round((stats.steps / stats.stepsGoal) * 100) : 0;
+  const stepProgress = stats
+    ? Math.round((stats.steps / stats.stepsGoal) * 100)
+    : 0;
   const currentSteps = stats ? stats.steps : 0;
   const goalSteps = stats ? stats.stepsGoal : 8000;
 
   const handleStepsKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       const newSteps = parseInt((e.target as HTMLInputElement).value, 10);
       if (!isNaN(newSteps) && newSteps >= 0) {
         onUpdateSteps(newSteps);
         setIsEditingSteps(false);
       }
-    } else if (e.key === 'Escape') {
-        setIsEditingSteps(false);
-        setEditableSteps(currentSteps); // Reset to original value
+    } else if (e.key === "Escape") {
+      setIsEditingSteps(false);
+      setEditableSteps(currentSteps); // Reset to original value
     }
   };
-
+  
+  const handleWeightKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+        onUpdateProfile({ weight: editableWeight, lastUpdated: new Date().toISOString() });
+        setIsEditingWeight(false);
+    } else if (e.key === 'Escape') {
+        setIsEditingWeight(false);
+        setEditableWeight(profile?.weight || "");
+    }
+  };
+  
+  const handleHeightKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+        onUpdateProfile({ height: editableHeight, lastUpdated: new Date().toISOString() });
+        setIsEditingHeight(false);
+    } else if (e.key === 'Escape') {
+        setIsEditingHeight(false);
+        setEditableHeight(profile?.height || "");
+    }
+  };
 
   return (
     <>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                    Today's Footsteps
-                </CardTitle>
-                <Footprints className="h-8 w-8 text-primary" />
-            </CardHeader>
-            <CardContent className="flex-grow">
-                {isEditingSteps ? (
-                  <Input
-                    type="number"
-                    value={editableSteps}
-                    onChange={(e) => setEditableSteps(Number(e.target.value))}
-                    onKeyDown={handleStepsKeyDown}
-                    onBlur={() => setIsEditingSteps(false)}
-                    autoFocus
-                    className="text-2xl font-bold h-auto p-0 border-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                  />
-                ) : (
-                <div 
-                  className="text-2xl font-bold cursor-pointer"
-                  onClick={() => setIsEditingSteps(true)}
-                >
-                  {currentSteps.toLocaleString()}
-                </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                    Target: {goalSteps.toLocaleString()} steps
-                </p>
-                <Progress value={stepProgress} className="mt-4 h-2" />
-            </CardContent>
-            <CardFooter>
-            </CardFooter>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Today's Footsteps
+            </CardTitle>
+            <Footprints className="h-8 w-8 text-primary" />
+          </CardHeader>
+          <CardContent className="flex-grow">
+            {isEditingSteps ? (
+              <Input
+                type="number"
+                value={editableSteps}
+                onChange={(e) => setEditableSteps(Number(e.target.value))}
+                onKeyDown={handleStepsKeyDown}
+                onBlur={() => setIsEditingSteps(false)}
+                autoFocus
+                className="h-auto p-0 text-2xl font-bold border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            ) : (
+              <div
+                className="cursor-pointer text-2xl font-bold"
+                onClick={() => setIsEditingSteps(true)}
+              >
+                {currentSteps.toLocaleString()}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Target: {goalSteps.toLocaleString()} steps
+            </p>
+            <Progress value={stepProgress} className="mt-4 h-2" />
+          </CardContent>
         </Card>
-        {mainStats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              {stat.icon}
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              {lastUpdated && (
-                <p className="pt-2 text-xs text-muted-foreground">
-                  Last updated: {lastUpdated}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+
+        {/* Weight Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">My Weight</CardTitle>
+            <Weight className="h-8 w-8 text-primary" />
+          </CardHeader>
+          <CardContent>
+            {isEditingWeight ? (
+               <Input
+                    value={editableWeight}
+                    onChange={(e) => setEditableWeight(e.target.value)}
+                    onKeyDown={handleWeightKeyDown}
+                    onBlur={() => setIsEditingWeight(false)}
+                    autoFocus
+                    className="h-auto p-0 text-2xl font-bold border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+            ) : (
+                <div 
+                    className="cursor-pointer text-2xl font-bold"
+                    onClick={() => setIsEditingWeight(true)}
+                >
+                    {profile?.weight || "N/A"}
+                </div>
+            )}
+            {profile?.lastUpdated && (
+              <p className="pt-2 text-xs text-muted-foreground">
+                Last updated: {format(new Date(profile.lastUpdated), "Pp")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Height Card */}
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">My Height</CardTitle>
+            <Ruler className="h-8 w-8 text-primary" />
+          </CardHeader>
+          <CardContent>
+             {isEditingHeight ? (
+               <Input
+                    value={editableHeight}
+                    onChange={(e) => setEditableHeight(e.target.value)}
+                    onKeyDown={handleHeightKeyDown}
+                    onBlur={() => setIsEditingHeight(false)}
+                    autoFocus
+                    className="h-auto p-0 text-2xl font-bold border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+            ) : (
+                <div 
+                    className="cursor-pointer text-2xl font-bold"
+                    onClick={() => setIsEditingHeight(true)}
+                >
+                    {profile?.height || "N/A"}
+                </div>
+            )}
+            {profile?.lastUpdated && (
+              <p className="pt-2 text-xs text-muted-foreground">
+                Last updated: {format(new Date(profile.lastUpdated), "Pp")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </>
   );

@@ -42,3 +42,10 @@ export interface DailyStats {
     steps: number;
     stepsGoal: number;
 }
+
+export interface UserProfile {
+    id: string; // Typically a user ID, but we'll use a static one for now
+    weight: string;
+    height: string;
+    lastUpdated: string; // ISO date string
+}
