@@ -6,7 +6,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc,
 import { getDb } from "@/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
 import { BODY_PARTS } from "@/lib/data";
-import { Loader2, History, Filter } from "lucide-react";
+import { Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
 import WorkoutForm from "@/app/components/workout-form";
@@ -14,7 +14,7 @@ import Header from "@/app/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
-import WaterIntakeChart from "./components/water-intake-chart";
+import WaterIntakeChart from "@/app/components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -341,5 +341,7 @@ export default function Home() {
     </div>
   );
 }
+
+    
 
     
