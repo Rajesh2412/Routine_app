@@ -6,7 +6,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc,
 import { getDb } from "@/app/lib/firebase";
 import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
 import { BODY_PARTS } from "@/app/lib/data";
-import { Loader2, History, Filter } from "lucide-react";
+import { Loader2, History } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
 import WorkoutForm from "@/app/components/workout-form";
@@ -18,6 +18,7 @@ import WaterIntakeChart from "./components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { Filter } from "lucide-react";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
