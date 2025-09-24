@@ -14,8 +14,16 @@ import {
   CardTitle,
   CardDescription
 } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { CalendarDays, Dumbbell, Coffee } from "lucide-react";
 import { WEEKLY_PLAN } from "@/lib/data";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 
 const weeklyPlanWithIcons = WEEKLY_PLAN.map(plan => ({
@@ -26,6 +34,7 @@ const weeklyPlanWithIcons = WEEKLY_PLAN.map(plan => ({
 
 export default function WeeklyPlan() {
   const [currentDay, setCurrentDay] = useState("");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const today = new Date();
@@ -35,6 +44,46 @@ export default function WeeklyPlan() {
 
   if (!currentDay) {
     return null; // Or a loading skeleton
+  }
+
+  const renderTabsList = () => {
+    const triggers = weeklyPlanWithIcons.map((item) => (
+      <TabsTrigger key={item.day} value={item.day} className="py-2 flex-1">
+        {item.day.substring(0,3)}
+      </TabsTrigger>
+    ));
+
+    if (isMobile) {
+      return (
+        <Carousel
+          opts={{
+            align: "start",
+            startIndex: weeklyPlanWithIcons.findIndex(d => d.day === currentDay),
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+             <TabsList className="grid w-full grid-cols-7 h-auto p-0 border-none bg-transparent">
+              {weeklyPlanWithIcons.map((item, index) => (
+                 <CarouselItem key={index} className="basis-1/4">
+                    <TabsTrigger key={item.day} value={item.day} className="py-2 w-full">
+                        {item.day.substring(0,3)}
+                    </TabsTrigger>
+                 </CarouselItem>
+              ))}
+             </TabsList>
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      );
+    }
+
+    return (
+       <TabsList className="grid w-full grid-cols-7 h-auto">
+        {triggers}
+      </TabsList>
+    );
   }
 
   return (
@@ -50,13 +99,7 @@ export default function WeeklyPlan() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue={currentDay} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto">
-            {weeklyPlanWithIcons.map((item) => (
-              <TabsTrigger key={item.day} value={item.day} className="py-2">
-                {item.day.substring(0,3)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          {renderTabsList()}
           {weeklyPlanWithIcons.map((item) => (
             <TabsContent key={item.day} value={item.day}>
               <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-lg mt-4 min-h-[150px]">
