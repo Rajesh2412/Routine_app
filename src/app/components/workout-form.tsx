@@ -38,6 +38,9 @@ const formSchema = z.object({
   reps: z.coerce
     .number({ invalid_type_error: "Reps must be a number." })
     .min(1, { message: "Must be at least 1 rep." }),
+  sets: z.coerce
+    .number({ invalid_type_error: "Sets must be a number." })
+    .min(1, { message: "Must be at least 1 set." }),
   equipment: z.string().min(2, { message: "Equipment is required." }),
   bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"]),
 });
@@ -65,6 +68,7 @@ export default function WorkoutForm({
     defaultValues: {
       type: "",
       reps: 0,
+      sets: 0,
       equipment: "None",
       bodyPart: undefined,
     },
@@ -76,11 +80,13 @@ export default function WorkoutForm({
         form.reset({
           ...editingWorkout,
           reps: Number(editingWorkout.reps),
+          sets: Number(editingWorkout.sets),
         });
       } else {
         form.reset({
           type: "",
           reps: 0,
+          sets: 0,
           equipment: "None",
           bodyPart: initialValues?.bodyPart || undefined,
         });
@@ -90,9 +96,9 @@ export default function WorkoutForm({
 
   const onSubmit = (data: WorkoutFormValues) => {
     if (editingWorkout) {
-      updateWorkout({ ...editingWorkout, ...data, reps: Number(data.reps) });
+      updateWorkout({ ...editingWorkout, ...data, reps: Number(data.reps), sets: Number(data.sets) });
     } else {
-      addWorkout({ ...data, reps: Number(data.reps) });
+      addWorkout({ ...data, reps: Number(data.reps), sets: Number(data.sets) });
     }
     setIsOpen(false);
   };
@@ -125,19 +131,34 @@ export default function WorkoutForm({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="reps"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Repetitions</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 12" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="reps"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repetitions</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 12" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="sets"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sets</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 3" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="equipment"

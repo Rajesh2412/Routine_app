@@ -25,6 +25,7 @@ import {
   Repeat,
   Cog,
   Target,
+  Layers,
 } from "lucide-react";
 import type { Workout } from "@/lib/types";
 import DeleteWorkoutDialog from "./delete-workout-dialog";
@@ -80,10 +81,14 @@ export default function WorkoutCard({
           </DropdownMenu>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+          <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Repeat className="h-4 w-4 text-accent" />
               <span>{workout.reps} reps</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Layers className="h-4 w-4 text-accent" />
+              <span>{workout.sets} sets</span>
             </div>
             <div className="flex items-center gap-2">
               <Cog className="h-4 w-4 text-accent" />

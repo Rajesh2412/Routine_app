@@ -16,6 +16,7 @@ export interface Workout {
   date: string; // Changed to string to store ISO date string
   type: string;
   reps: number;
+  sets: number;
   equipment: string;
   bodyPart: BodyPart;
 }
@@ -23,6 +24,7 @@ export interface Workout {
 export const workoutFormSchema = z.object({
   type: z.string().min(2, "Workout type must be at least 2 characters."),
   reps: z.coerce.number().min(1, "Reps must be at least 1."),
+  sets: z.coerce.number().min(1, "Sets must be at least 1."),
   equipment: z.string().min(2, "Equipment must be at least 2 characters."),
   bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"]),
 });
