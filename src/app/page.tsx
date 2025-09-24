@@ -16,6 +16,7 @@ import FloatingMenu from "./components/floating-menu";
 import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "@/app/components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
+import WeeklyPlan from "./components/weekly-plan";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -357,6 +358,7 @@ export default function Home() {
           stats={dailyStats} 
           onUpdateSteps={handleUpdateSteps}
         />
+        <WeeklyPlan />
         <WaterIntakeChart data={waterIntakeData} />
       </div>
     );

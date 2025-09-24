@@ -98,7 +98,6 @@ export default function PersonalStats({ stats, onUpdateSteps }: PersonalStatsPro
                 <Progress value={stepProgress} className="mt-4 h-2" />
             </CardContent>
             <CardFooter>
-                 <p className="text-xs text-muted-foreground">Click on the number to edit.</p>
             </CardFooter>
         </Card>
         {mainStats.map((stat) => (
