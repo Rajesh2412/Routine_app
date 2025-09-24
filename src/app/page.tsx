@@ -50,6 +50,10 @@ export default function Home() {
   }, [toast]);
 
   const fetchWaterIntakeData = useCallback(async () => {
+    if (!isDbReady) {
+      console.log("DB not ready, skipping water intake fetch.");
+      return;
+    }
     try {
       const db = await getDb();
       const today = startOfDay(new Date());
@@ -88,12 +92,16 @@ export default function Home() {
         description: "Could not load water intake data.",
       });
     }
-  }, [toast]);
+  }, [toast, isDbReady]);
 
   useEffect(() => {
-    if (!isDbReady) return;
+    if (!isDbReady) {
+       console.log("DB not ready, skipping initial data fetch.");
+      return;
+    }
 
     const fetchInitialData = async () => {
+      console.log("DB is ready, fetching initial data...");
       setIsLoading(true);
       try {
         const db = await getDb();
@@ -123,6 +131,10 @@ export default function Home() {
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
     const newWorkout = {
       ...workout,
       date: new Date().toISOString(),
@@ -146,6 +158,10 @@ export default function Home() {
   };
 
   const handleUpdateWorkout = async (workout: Workout) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
     try {
       const db = await getDb();
       const workoutRef = doc(db, "workouts", workout.id);
@@ -169,6 +185,10 @@ export default function Home() {
   };
 
   const handleDeleteWorkout = async (id: string) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
     try {
       const db = await getDb();
       await deleteDoc(doc(db, "workouts", id));
@@ -188,6 +208,10 @@ export default function Home() {
   };
 
   const handleAddWater = async (quantity: number) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
     const intakeInLiters = quantity / 1000;
     const today = startOfDay(new Date());
     const docId = format(today, "yyyy-MM-dd");
@@ -243,7 +267,7 @@ export default function Home() {
   const allFilters = useMemo(() => ["All", ...BODY_PARTS], []);
 
   const renderContent = () => {
-    if (isLoading && !isDbReady) {
+    if (isLoading) {
       return (
         <div className="flex justify-center items-center h-48">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -317,5 +341,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
