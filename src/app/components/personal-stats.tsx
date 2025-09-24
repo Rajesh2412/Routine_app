@@ -1,13 +1,13 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { Footprints, Ruler, Weight, RefreshCw } from "lucide-react";
+import { Footprints, Ruler, Weight } from "lucide-react";
 import { format } from "date-fns";
 import type { DailyStats } from "@/lib/types";
-import { Button } from "@/components/ui/button";
 
 const mainStats = [
   {
@@ -24,12 +24,11 @@ const mainStats = [
 
 interface PersonalStatsProps {
     stats: DailyStats | null;
-    onSyncSteps: () => void;
     onUpdateSteps: (newSteps: number) => void;
 }
 
 
-export default function PersonalStats({ stats, onSyncSteps, onUpdateSteps }: PersonalStatsProps) {
+export default function PersonalStats({ stats, onUpdateSteps }: PersonalStatsProps) {
   const [lastUpdated, setLastUpdated] = useState("");
   const [isEditingSteps, setIsEditingSteps] = useState(false);
   const [editableSteps, setEditableSteps] = useState(stats?.steps || 0);
@@ -99,10 +98,7 @@ export default function PersonalStats({ stats, onSyncSteps, onUpdateSteps }: Per
                 <Progress value={stepProgress} className="mt-4 h-2" />
             </CardContent>
             <CardFooter>
-                 <Button onClick={onSyncSteps} size="sm" variant="outline" className="w-full">
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Sync Steps
-                </Button>
+                 <p className="text-xs text-muted-foreground">Click on the number to edit.</p>
             </CardFooter>
         </Card>
         {mainStats.map((stat) => (

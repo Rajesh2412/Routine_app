@@ -18,7 +18,6 @@ import WaterIntakeChart from "@/app/components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import StepsSyncDialog from "./components/steps-sync-dialog";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -27,7 +26,6 @@ export default function Home() {
   const [filter, setFilter] = useState<string>("All");
   const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
   const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
-  const [isStepsFormOpen, setIsStepsFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -273,11 +271,6 @@ export default function Home() {
     }
   };
 
-  const handleSyncSteps = (steps: number) => {
-    console.log("Syncing steps:", steps)
-    // AI and DB logic to be added here.
-  };
-
   const handleUpdateSteps = async (newSteps: number) => {
     if (!isDbReady || !dailyStats) {
        toast({ variant: "destructive", title: "Database not ready or stats not loaded."});
@@ -362,7 +355,6 @@ export default function Home() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <PersonalStats 
           stats={dailyStats} 
-          onSyncSteps={() => setIsStepsFormOpen(true)}
           onUpdateSteps={handleUpdateSteps}
         />
         <WaterIntakeChart data={waterIntakeData} />
@@ -396,11 +388,6 @@ export default function Home() {
         isOpen={isWaterFormOpen}
         setIsOpen={setIsWaterFormOpen}
         addWater={handleAddWater}
-      />
-       <StepsSyncDialog
-        isOpen={isStepsFormOpen}
-        setIsOpen={setIsStepsFormOpen}
-        onSync={handleSyncSteps}
       />
     </div>
   );
