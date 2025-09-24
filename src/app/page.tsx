@@ -4,9 +4,9 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
-import type { Workout, WorkoutFormValues, WaterIntakeData } from "@/lib/types";
+import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats } from "@/lib/types";
 import { BODY_PARTS } from "@/lib/data";
-import { Loader2, History } from "lucide-react";
+import { Loader2, History, Filter } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
 import WorkoutForm from "@/app/components/workout-form";
@@ -18,13 +18,16 @@ import WaterIntakeChart from "@/app/components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import StepsSyncDialog from "./components/steps-sync-dialog";
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
+  const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
   const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
+  const [isStepsFormOpen, setIsStepsFormOpen] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
@@ -32,10 +35,8 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("Attempting to initialize database...");
     getDb()
       .then(() => {
-        console.log("Database ready, client is online.");
         setIsDbReady(true);
       })
       .catch((error) => {
@@ -50,10 +51,7 @@ export default function Home() {
   }, [toast]);
 
   const fetchWaterIntakeData = useCallback(async () => {
-    if (!isDbReady) {
-      console.log("DB not ready, skipping water intake fetch.");
-      return;
-    }
+    if (!isDbReady) return;
     try {
       const db = await getDb();
       const today = startOfDay(new Date());
@@ -94,14 +92,41 @@ export default function Home() {
     }
   }, [toast, isDbReady]);
 
-  useEffect(() => {
-    if (!isDbReady) {
-       console.log("DB not ready, skipping initial data fetch.");
-      return;
+  const fetchDailyStats = useCallback(async () => {
+    if (!isDbReady) return;
+    try {
+        const db = await getDb();
+        const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
+        const docRef = doc(db, "dailyStats", todayId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            setDailyStats(docSnap.data() as DailyStats);
+        } else {
+            const newDailyStats: DailyStats = {
+                id: todayId,
+                date: new Date().toISOString(),
+                steps: 0,
+                stepsGoal: 8000,
+            }
+            await setDoc(docRef, newDailyStats);
+            setDailyStats(newDailyStats);
+        }
+    } catch (error) {
+        console.error("Error fetching daily stats:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load daily stats.",
+        });
     }
+}, [isDbReady, toast]);
+
+
+  useEffect(() => {
+    if (!isDbReady) return;
 
     const fetchInitialData = async () => {
-      console.log("DB is ready, fetching initial data...");
       setIsLoading(true);
       try {
         const db = await getDb();
@@ -113,6 +138,7 @@ export default function Home() {
         setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
         
         await fetchWaterIntakeData();
+        await fetchDailyStats();
 
       } catch (error) {
         console.error("Error fetching initial data: ", error);
@@ -127,7 +153,7 @@ export default function Home() {
     };
 
     fetchInitialData();
-  }, [isDbReady, toast, fetchWaterIntakeData]);
+  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -246,6 +272,11 @@ export default function Home() {
       });
     }
   };
+
+  const handleSyncSteps = (steps: number) => {
+    console.log("Syncing steps:", steps)
+    // AI and DB logic to be added here.
+  };
   
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
@@ -305,7 +336,7 @@ export default function Home() {
     return (
       <div className="space-y-8">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <PersonalStats />
+        <PersonalStats stats={dailyStats} onSyncSteps={() => setIsStepsFormOpen(true)} />
         <WaterIntakeChart data={waterIntakeData} />
       </div>
     );
@@ -338,10 +369,11 @@ export default function Home() {
         setIsOpen={setIsWaterFormOpen}
         addWater={handleAddWater}
       />
+       <StepsSyncDialog
+        isOpen={isStepsFormOpen}
+        setIsOpen={setIsStepsFormOpen}
+        onSync={handleSyncSteps}
+      />
     </div>
   );
 }
-
-    
-
-    

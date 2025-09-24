@@ -30,3 +30,10 @@ export interface WaterIntakeData {
   date: string; // e.g., "Mon", "Tue"
   intake: number; // in Liters
 }
+
+export interface DailyStats {
+    id: string; // "yyyy-MM-dd"
+    date: string; // ISO date string
+    steps: number;
+    stepsGoal: number;
+}

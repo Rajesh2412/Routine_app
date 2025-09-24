@@ -2,10 +2,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Footprints, Ruler, Weight } from "lucide-react";
+import { Footprints, Ruler, Weight, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
+import type { DailyStats } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 
 const mainStats = [
   {
@@ -20,12 +22,13 @@ const mainStats = [
   },
 ];
 
-const stepsData = {
-    current: 3245,
-    goal: 8000,
+interface PersonalStatsProps {
+    stats: DailyStats | null;
+    onSyncSteps: () => void;
 }
 
-export default function PersonalStats() {
+
+export default function PersonalStats({ stats, onSyncSteps }: PersonalStatsProps) {
   const [lastUpdated, setLastUpdated] = useState("");
 
   useEffect(() => {
@@ -33,25 +36,33 @@ export default function PersonalStats() {
     setLastUpdated(format(new Date(), "PPP"));
   }, []);
 
-  const stepProgress = Math.round((stepsData.current / stepsData.goal) * 100);
+  const stepProgress = stats ? Math.round((stats.steps / stats.stepsGoal) * 100) : 0;
+  const currentSteps = stats ? stats.steps : 0;
+  const goalSteps = stats ? stats.stepsGoal : 8000;
 
   return (
     <>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                     Today's Footsteps
                 </CardTitle>
                 <Footprints className="h-8 w-8 text-primary" />
             </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{stepsData.current.toLocaleString()}</div>
+            <CardContent className="flex-grow">
+                <div className="text-2xl font-bold">{currentSteps.toLocaleString()}</div>
                 <p className="text-xs text-muted-foreground">
-                    Target: {stepsData.goal.toLocaleString()} steps
+                    Target: {goalSteps.toLocaleString()} steps
                 </p>
                 <Progress value={stepProgress} className="mt-4 h-2" />
             </CardContent>
+            <CardFooter>
+                 <Button onClick={onSyncSteps} size="sm" variant="outline" className="w-full">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Sync Steps
+                </Button>
+            </CardFooter>
         </Card>
         {mainStats.map((stat) => (
           <Card key={stat.title}>
