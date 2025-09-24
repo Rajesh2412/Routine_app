@@ -29,8 +29,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { Workout, WorkoutFormValues } from "@/lib/types";
-import { BODY_PARTS } from "@/lib/data";
+import type { Workout, WorkoutFormValues, BodyPart } from "@/lib/types";
+
+const ALL_BODY_PARTS: BodyPart[] = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"];
 
 const formSchema = z.object({
   type: z.string().min(2, { message: "Workout type is required." }),
@@ -38,8 +39,9 @@ const formSchema = z.object({
     .number({ invalid_type_error: "Reps must be a number." })
     .min(1, { message: "Must be at least 1 rep." }),
   equipment: z.string().min(2, { message: "Equipment is required." }),
-  bodyPart: z.string({ required_error: "Please select a body part." }),
+  bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"]),
 });
+
 
 interface WorkoutFormProps {
   isOpen: boolean;
@@ -47,6 +49,7 @@ interface WorkoutFormProps {
   addWorkout: (data: WorkoutFormValues) => void;
   updateWorkout: (data: Workout) => void;
   editingWorkout: Workout | null;
+  initialValues?: Partial<WorkoutFormValues>;
 }
 
 export default function WorkoutForm({
@@ -55,32 +58,35 @@ export default function WorkoutForm({
   addWorkout,
   updateWorkout,
   editingWorkout,
+  initialValues,
 }: WorkoutFormProps) {
   const form = useForm<WorkoutFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: "",
       reps: 0,
-      equipment: "",
+      equipment: "None",
       bodyPart: undefined,
     },
   });
 
   useEffect(() => {
-    if (editingWorkout) {
-      form.reset({
-        ...editingWorkout,
-        reps: Number(editingWorkout.reps),
-      });
-    } else {
-      form.reset({
-        type: "",
-        reps: 0,
-        equipment: "None",
-        bodyPart: undefined,
-      });
+    if (isOpen) {
+      if (editingWorkout) {
+        form.reset({
+          ...editingWorkout,
+          reps: Number(editingWorkout.reps),
+        });
+      } else {
+        form.reset({
+          type: "",
+          reps: 0,
+          equipment: "None",
+          bodyPart: initialValues?.bodyPart || undefined,
+        });
+      }
     }
-  }, [editingWorkout, form, isOpen]);
+  }, [editingWorkout, form, isOpen, initialValues]);
 
   const onSubmit = (data: WorkoutFormValues) => {
     if (editingWorkout) {
@@ -161,7 +167,7 @@ export default function WorkoutForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {BODY_PARTS.map((part) => (
+                      {ALL_BODY_PARTS.map((part) => (
                         <SelectItem key={part} value={part}>
                           {part}
                         </SelectItem>

@@ -17,27 +17,14 @@ import {
 } from "@/components/ui/card";
 import { CalendarDays, Dumbbell, Coffee, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WEEKLY_PLAN } from "@/lib/data";
 
-const weeklyPlan = [
-  { day: "Sunday", focus: "Shoulders", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-  { day: "Monday", focus: "Abs", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-  { day: "Tuesday", focus: "Legs", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-  { day: "Wednesday", focus: "Rest", icon: <Coffee className="h-10 w-10 text-primary" /> },
-  { day: "Thursday", focus: "Chest", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-  { day: "Friday", focus: "Back", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-  { day: "Saturday", focus: "Lower Back", icon: <Dumbbell className="h-10 w-10 text-primary" /> },
-];
 
-// JS Date object's getDay() returns 0 for Sunday, 1 for Monday, etc.
-const dayIndexMap: { [key: string]: number } = {
-  Sunday: 0,
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-};
+const weeklyPlanWithIcons = WEEKLY_PLAN.map(plan => ({
+    ...plan,
+    icon: plan.focus === "Rest" ? <Coffee className="h-10 w-10 text-primary" /> : <Dumbbell className="h-10 w-10 text-primary" />
+}));
+
 
 export default function WeeklyPlan() {
   const [currentDay, setCurrentDay] = useState("");
@@ -66,13 +53,13 @@ export default function WeeklyPlan() {
       <CardContent>
         <Tabs defaultValue={currentDay} className="w-full">
           <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 h-auto">
-            {weeklyPlan.map((item) => (
+            {weeklyPlanWithIcons.map((item) => (
               <TabsTrigger key={item.day} value={item.day} className="py-2">
                 {item.day.substring(0,3)}
               </TabsTrigger>
             ))}
           </TabsList>
-          {weeklyPlan.map((item) => (
+          {weeklyPlanWithIcons.map((item) => (
             <TabsContent key={item.day} value={item.day}>
               <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-lg mt-4 min-h-[150px]">
                 {item.icon}

@@ -4,8 +4,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
-import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats } from "@/lib/types";
-import { BODY_PARTS } from "@/lib/data";
+import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats, BodyPart } from "@/lib/types";
+import { WEEKLY_PLAN } from "@/lib/data";
 import { Loader2, History, Filter } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
 import WorkoutFilters from "@/app/components/workout-filters";
@@ -19,6 +19,9 @@ import WaterIntakeForm from "@/app/components/water-intake-form";
 import WeeklyPlan from "./components/weekly-plan";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+
+const ALL_BODY_PARTS: BodyPart[] = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"];
+
 
 export default function Home() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
@@ -302,9 +305,21 @@ export default function Home() {
   };
   
   const handleOpenAddForm = () => {
+    const today = new Date();
+    const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(today);
+    const todaysPlan = WEEKLY_PLAN.find(plan => plan.day === dayName);
+    const bodyPart = todaysPlan?.focus as BodyPart | undefined;
+    
+    // Check if the body part is valid for the form
+    const validBodyPart = bodyPart && ALL_BODY_PARTS.includes(bodyPart) ? bodyPart : undefined;
+
     setEditingWorkout(null);
+    formInitialValues.bodyPart = validBodyPart; // Set initial value for form
     setIsWorkoutFormOpen(true);
   };
+
+  const formInitialValues: Partial<WorkoutFormValues> = {};
+
 
   const filteredWorkouts = useMemo(() => {
     if (filter === "All") {
@@ -313,7 +328,7 @@ export default function Home() {
     return workouts.filter((w) => w.bodyPart === filter);
   }, [workouts, filter]);
 
-  const allFilters = useMemo(() => ["All", ...BODY_PARTS], []);
+  const allFilters = useMemo(() => ["All", ...ALL_BODY_PARTS.filter(p => p !== 'Rest' && p !== 'Abs' && p !== 'Lower Back')], []);
 
   const renderContent = () => {
     if (isLoading) {
@@ -385,6 +400,7 @@ export default function Home() {
         addWorkout={handleAddWorkout}
         updateWorkout={handleUpdateWorkout}
         editingWorkout={editingWorkout}
+        initialValues={formInitialValues}
       />
       <WaterIntakeForm 
         isOpen={isWaterFormOpen}

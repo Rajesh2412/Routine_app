@@ -6,7 +6,10 @@ export type BodyPart =
   | "Legs"
   | "Shoulders"
   | "Arms"
-  | "Core";
+  | "Core"
+  | "Abs"
+  | "Lower Back"
+  | "Rest";
 
 export interface Workout {
   id: string;
@@ -21,7 +24,7 @@ export const workoutFormSchema = z.object({
   type: z.string().min(2, "Workout type must be at least 2 characters."),
   reps: z.coerce.number().min(1, "Reps must be at least 1."),
   equipment: z.string().min(2, "Equipment must be at least 2 characters."),
-  bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"]),
+  bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"]),
 });
 
 export type WorkoutFormValues = z.infer<typeof workoutFormSchema>;
