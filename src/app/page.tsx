@@ -36,28 +36,11 @@ export default function Home() {
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
-  const [isDbReady, setIsDbReady] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    getDb()
-      .then(() => {
-        setIsDbReady(true);
-        console.log("Database is ready.");
-      })
-      .catch((error) => {
-        console.error("!!! Failed to initialize database:", error);
-        toast({
-          variant: "destructive",
-          title: "Database Connection Error",
-          description: "Could not connect to Firestore. Please check console for details.",
-          duration: 10000,
-        });
-      });
-  }, [toast]);
-
-  const fetchWaterIntakeData = useCallback(async (db: any) => {
+  const fetchWaterIntakeData = useCallback(async () => {
     try {
+      const db = await getDb();
       const today = startOfDay(new Date());
       const weekAgo = subDays(today, 6);
       
@@ -96,8 +79,9 @@ export default function Home() {
     }
   }, [toast]);
 
-  const fetchDailyStats = useCallback(async (db: any) => {
+  const fetchDailyStats = useCallback(async () => {
     try {
+        const db = await getDb();
         const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
         const docRef = doc(db, "dailyStats", todayId);
         const docSnap = await getDoc(docRef);
@@ -124,8 +108,9 @@ export default function Home() {
     }
 }, [toast]);
 
-const fetchUserProfile = useCallback(async (db: any) => {
+const fetchUserProfile = useCallback(async () => {
     try {
+        const db = await getDb();
         const docRef = doc(db, "userProfile", USER_PROFILE_ID);
         const docSnap = await getDoc(docRef);
 
@@ -151,8 +136,9 @@ const fetchUserProfile = useCallback(async (db: any) => {
     }
 }, [toast]);
 
-const fetchProteinIntake = useCallback(async (db: any) => {
+const fetchProteinIntake = useCallback(async () => {
   try {
+      const db = await getDb();
       const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
       const docRef = doc(db, "proteinIntake", todayId);
       const docSnap = await getDoc(docRef);
@@ -192,10 +178,10 @@ const fetchProteinIntake = useCallback(async (db: any) => {
       setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       
       await Promise.all([
-        fetchWaterIntakeData(db),
-        fetchDailyStats(db),
-        fetchUserProfile(db),
-        fetchProteinIntake(db)
+        fetchWaterIntakeData(),
+        fetchDailyStats(),
+        fetchUserProfile(),
+        fetchProteinIntake()
       ]);
 
     } catch (error) {
@@ -212,16 +198,25 @@ const fetchProteinIntake = useCallback(async (db: any) => {
 
 
   useEffect(() => {
-    if (isDbReady) {
-      fetchInitialData();
-    }
-  }, [isDbReady, fetchInitialData]);
+    getDb()
+      .then(() => {
+        console.log("Database is ready, fetching initial data.");
+        fetchInitialData();
+      })
+      .catch((error) => {
+        console.error("!!! Failed to initialize database:", error);
+        toast({
+          variant: "destructive",
+          title: "Database Connection Error",
+          description: "Could not connect to Firestore. Please check console for details.",
+          duration: 10000,
+        });
+        setIsLoading(false);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddProtein = async (grams: number) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
-    }
     const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
     const currentIntake = proteinIntake?.intake || 0;
     const newIntake = currentIntake + grams;
@@ -252,10 +247,6 @@ const fetchProteinIntake = useCallback(async (db: any) => {
   };
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
-    }
     const newWorkout = {
       ...workout,
       date: new Date().toISOString(),
@@ -289,10 +280,6 @@ const fetchProteinIntake = useCallback(async (db: any) => {
       });
       return;
     }
-    if (!isDbReady) {
-      toast({ variant: "destructive", title: "Database not ready." });
-      return;
-    }
     try {
       const db = await getDb();
       const workoutRef = doc(db, "workouts", workout.id);
@@ -316,10 +303,6 @@ const fetchProteinIntake = useCallback(async (db: any) => {
   };
 
   const handleDeleteWorkout = async (id: string) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
-    }
     try {
       const db = await getDb();
       await deleteDoc(doc(db, "workouts", id));
@@ -339,10 +322,6 @@ const fetchProteinIntake = useCallback(async (db: any) => {
   };
 
   const handleAddWater = async (quantity: number) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
-    }
     const intakeInLiters = quantity / 1000;
     const today = startOfDay(new Date());
     const docId = format(today, "yyyy-MM-dd");
@@ -364,7 +343,7 @@ const fetchProteinIntake = useCallback(async (db: any) => {
         title: "Success",
         description: `${quantity}ml of water logged.`,
       });
-      await fetchWaterIntakeData(db); // Refresh chart data
+      await fetchWaterIntakeData(); // Refresh chart data
     } catch (error) {
        console.error("Error adding water intake: ", error);
        toast({
@@ -376,8 +355,8 @@ const fetchProteinIntake = useCallback(async (db: any) => {
   };
 
   const handleUpdateSteps = async (newSteps: number) => {
-    if (!isDbReady || !dailyStats) {
-       toast({ variant: "destructive", title: "Database not ready or stats not loaded."});
+    if (!dailyStats) {
+       toast({ variant: "destructive", title: "Stats not loaded."});
        return;
     }
     try {
@@ -400,8 +379,8 @@ const fetchProteinIntake = useCallback(async (db: any) => {
   };
   
     const handleUpdateProfile = async (data: Partial<UserProfile>) => {
-    if (!isDbReady || !userProfile) {
-       toast({ variant: "destructive", title: "Database not ready or profile not loaded."});
+    if (!userProfile) {
+       toast({ variant: "destructive", title: "Profile not loaded."});
        return;
     }
     try {
@@ -413,7 +392,8 @@ const fetchProteinIntake = useCallback(async (db: any) => {
         title: "Success",
         description: "Profile updated successfully.",
       });
-    } catch (error) {
+    } catch (error)
+{
       console.error("Error updating profile:", error);
       toast({
         variant: "destructive",
@@ -549,5 +529,3 @@ const fetchProteinIntake = useCallback(async (db: any) => {
     </div>
   );
 }
-
-    
