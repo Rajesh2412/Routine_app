@@ -133,8 +133,8 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                             <div key={workout.id} className="p-2 bg-background/50 rounded-md border border-border/50 text-xs w-40">
                                <p className="font-semibold text-primary truncate text-center">{workout.type}</p>
                                <div className="flex flex-row flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-muted-foreground">
-                                  <span className="flex items-center gap-1"><Layers className="h-2.5 w-2.5" /> {workout.sets} sets</span>
-                                  <span className="flex items-center gap-1"><Repeat className="h-2.5 w-2.5" /> {workout.reps} reps</span>
+                                  <span className="flex items-center gap-1"><Layers className="h-2.5 w-2.5" /> {workout.sets} S</span>
+                                  <span className="flex items-center gap-1"><Repeat className="h-2.5 w-2.5" /> {workout.reps} R</span>
                                   {workout.kg > 0 && <span className="flex items-center gap-1"><Weight className="h-2.5 w-2.5" /> {workout.kg} kg</span>}
                                </div>
                             </div>
