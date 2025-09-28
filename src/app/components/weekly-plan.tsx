@@ -21,18 +21,22 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { CalendarDays, Dumbbell, Coffee } from "lucide-react";
+import { CalendarDays, Dumbbell, Coffee, Weight, Repeat, Layers } from "lucide-react";
 import { WEEKLY_PLAN } from "@/lib/data";
 import { useIsMobile } from "@/hooks/use-mobile";
-
+import type { Workout } from "@/lib/types";
+import { format } from "date-fns";
 
 const weeklyPlanWithIcons = WEEKLY_PLAN.map(plan => ({
     ...plan,
     icon: plan.focus === "Rest" ? <Coffee className="h-10 w-10 text-primary" /> : <Dumbbell className="h-10 w-10 text-primary" />
 }));
 
+interface WeeklyPlanProps {
+  workouts: Workout[];
+}
 
-export default function WeeklyPlan() {
+export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
   const [currentDay, setCurrentDay] = useState("");
   const isMobile = useIsMobile();
 
@@ -45,6 +49,12 @@ export default function WeeklyPlan() {
   if (!currentDay) {
     return null; // Or a loading skeleton
   }
+  
+  const getWorkoutsForDay = (dayName: string) => {
+    return workouts.filter(workout => {
+      return format(new Date(workout.date), 'EEEE') === dayName;
+    });
+  };
 
   const renderTabsList = () => {
     const triggers = weeklyPlanWithIcons.map((item) => (
@@ -102,17 +112,42 @@ export default function WeeklyPlan() {
       <CardContent>
         <Tabs defaultValue={currentDay} className="w-full">
           {renderTabsList()}
-          {weeklyPlanWithIcons.map((item) => (
-            <TabsContent key={item.day} value={item.day}>
-              <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-lg mt-4 min-h-[150px]">
-                {item.icon}
-                <p className="mt-4 text-2xl font-bold text-foreground">
-                  {item.focus} Day
-                </p>
-                 <p className="text-sm text-muted-foreground">{item.day}</p>
-              </div>
-            </TabsContent>
-          ))}
+          {weeklyPlanWithIcons.map((item) => {
+            const dayWorkouts = getWorkoutsForDay(item.day);
+            return (
+                <TabsContent key={item.day} value={item.day}>
+                  <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-lg mt-4 min-h-[150px]">
+                    {item.icon}
+                    <p className="mt-4 text-2xl font-bold text-foreground">
+                      {item.focus} Day
+                    </p>
+                    <p className="text-sm text-muted-foreground">{item.day}</p>
+                  </div>
+                  
+                   <div className="mt-6">
+                    <h4 className="text-lg font-semibold mb-3">Logged Workouts for {item.day}:</h4>
+                     {dayWorkouts.length > 0 ? (
+                      <div className="space-y-3">
+                        {dayWorkouts.map(workout => (
+                          <div key={workout.id} className="p-3 bg-secondary/50 rounded-lg border border-border/50 text-sm">
+                             <p className="font-semibold text-primary">{workout.type}</p>
+                             <div className="grid grid-cols-3 gap-2 mt-2 text-muted-foreground text-xs">
+                                <span className="flex items-center gap-1"><Layers className="h-3 w-3" /> {workout.sets} sets</span>
+                                <span className="flex items-center gap-1"><Repeat className="h-3 w-3" /> {workout.reps} reps</span>
+                                {workout.kg > 0 && <span className="flex items-center gap-1"><Weight className="h-3 w-3" /> {workout.kg} kg</span>}
+                             </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No workouts logged for this day yet.
+                      </p>
+                    )}
+                  </div>
+                </TabsContent>
+            )
+          })}
         </Tabs>
       </CardContent>
     </Card>

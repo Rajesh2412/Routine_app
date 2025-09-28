@@ -203,7 +203,7 @@ const fetchUserProfile = useCallback(async () => {
     try {
       const db = await getDb();
       const docRef = await addDoc(collection(db, "workouts"), newWorkout);
-      setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev]);
+      setWorkouts((prev) => [{ id: docRef.id, ...newWorkout } as Workout, ...prev].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
        toast({
         title: "Success",
         description: "Workout logged successfully.",
@@ -229,7 +229,7 @@ const fetchUserProfile = useCallback(async () => {
       const { id, ...workoutData } = workout;
       await updateDoc(workoutRef, {...workoutData, kg: workout.kg || 0});
       setWorkouts((prev) =>
-        prev.map((w) => (w.id === workout.id ? workout : w))
+        prev.map((w) => (w.id === workout.id ? workout : w)).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       );
       toast({
         title: "Success",
@@ -432,7 +432,7 @@ const fetchUserProfile = useCallback(async () => {
           onUpdateSteps={handleUpdateSteps}
           onUpdateProfile={handleUpdateProfile}
         />
-        <WeeklyPlan />
+        <WeeklyPlan workouts={workouts} />
         <WaterIntakeChart data={waterIntakeData} />
         <FoodNutrition />
       </div>
