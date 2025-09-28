@@ -288,12 +288,12 @@ const fetchUserProfile = useCallback(async () => {
       toast({ variant: "destructive", title: "Database not ready." });
       return;
     }
-    if (!workout.id) {
-      console.error("Error: workout ID is missing.", workout);
+    if (!workout || !workout.id) {
+      console.error("Error: workout ID is missing or workout object is invalid.", workout);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Cannot update workout without a valid ID.",
+        description: "Cannot update workout with an invalid ID.",
       });
       return;
     }
@@ -407,8 +407,8 @@ const fetchUserProfile = useCallback(async () => {
   };
   
     const handleUpdateProfile = async (data: Partial<UserProfile>) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
+    if (!isDbReady || !userProfile) {
+       toast({ variant: "destructive", title: "Database not ready or profile not loaded."});
        return;
     }
     try {
@@ -556,5 +556,7 @@ const fetchUserProfile = useCallback(async () => {
     </div>
   );
 }
+
+    
 
     
