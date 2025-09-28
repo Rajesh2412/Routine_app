@@ -91,7 +91,7 @@ export default function WorkoutCard({
               <Layers className="h-4 w-4 text-accent" />
               <span>{workout.sets} sets</span>
             </div>
-            {workout.kg > 0 && (
+            {workout.kg && workout.kg > 0 && (
               <div className="flex items-center gap-2">
                 <Weight className="h-4 w-4 text-accent" />
                 <span>{workout.kg} kg</span>

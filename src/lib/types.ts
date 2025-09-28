@@ -19,7 +19,7 @@ export interface Workout {
   sets: number;
   equipment: string;
   bodyPart: BodyPart;
-  kg: number;
+  kg?: number;
 }
 
 export const workoutFormSchema = z.object({
