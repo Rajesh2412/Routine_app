@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { Footprints, Ruler, Weight, Flame } from "lucide-react";
+import { Footprints, Ruler, Weight, Drumstick } from "lucide-react";
 import { format } from "date-fns";
 import type { DailyStats, UserProfile } from "@/lib/types";
 
@@ -162,7 +162,7 @@ export default function PersonalStats({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Protein Needed</CardTitle>
-            <Flame className="h-8 w-8 text-primary" />
+            <Drumstick className="h-8 w-8 text-primary" />
           </CardHeader>
           <CardContent>
              <div className="text-2xl font-bold">
