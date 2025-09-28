@@ -126,7 +126,6 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                     </div>
                   
                     <div className="h-full">
-                      <h4 className="text-lg font-semibold mb-3">Logged Workouts:</h4>
                        {dayWorkouts.length > 0 ? (
                         <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
                           {dayWorkouts.map(workout => (
