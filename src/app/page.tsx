@@ -285,8 +285,17 @@ const fetchUserProfile = useCallback(async () => {
 
   const handleUpdateWorkout = async (workout: Workout) => {
     if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
+      toast({ variant: "destructive", title: "Database not ready." });
+      return;
+    }
+    if (!workout.id) {
+      console.error("Error: workout ID is missing.", workout);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot update workout without a valid ID.",
+      });
+      return;
     }
     try {
       const db = await getDb();
