@@ -43,6 +43,7 @@ export default function Home() {
     getDb()
       .then(() => {
         setIsDbReady(true);
+        console.log("Database is ready.");
       })
       .catch((error) => {
         console.error("!!! Failed to initialize database:", error);
@@ -54,107 +55,6 @@ export default function Home() {
         });
       });
   }, [toast]);
-
-  const fetchInitialData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const db = await getDb();
-      
-      const workoutsQuerySnapshot = await getDocs(collection(db, "workouts"));
-      const workoutsData = workoutsQuerySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Workout[];
-      setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      
-      // Fetch Other Data in parallel
-      await Promise.all([
-        fetchWaterIntakeData(db),
-        fetchDailyStats(db),
-        fetchUserProfile(db),
-        fetchProteinIntake(db)
-      ]);
-
-    } catch (error) {
-      console.error("Error fetching initial data: ", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not load initial app data.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
-
-
-  useEffect(() => {
-    if (isDbReady) {
-      fetchInitialData();
-    }
-  }, [isDbReady, fetchInitialData]);
-
-  
-  const fetchProteinIntake = useCallback(async (db: any) => {
-    try {
-        const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
-        const docRef = doc(db, "proteinIntake", todayId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            setProteinIntake(docSnap.data() as ProteinIntakeData);
-        } else {
-            const newProteinIntake: ProteinIntakeData = {
-                id: todayId,
-                date: new Date().toISOString(),
-                intake: 0,
-            }
-            await setDoc(docRef, newProteinIntake);
-            setProteinIntake(newProteinIntake);
-        }
-    } catch (error) {
-        console.error("Error fetching protein intake:", error);
-        toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Could not load protein intake data.",
-        });
-    }
-  }, [toast]);
-
-  const handleAddProtein = async (grams: number) => {
-    if (!isDbReady) {
-       toast({ variant: "destructive", title: "Database not ready."});
-       return;
-    }
-    const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
-
-    try {
-      const db = await getDb();
-      const docRef = doc(db, "proteinIntake", todayId);
-      const currentIntake = proteinIntake?.intake || 0;
-      const newIntake = currentIntake + grams;
-      
-      await setDoc(docRef, { intake: newIntake, id: todayId, date: new Date().toISOString() }, { merge: true });
-
-      setProteinIntake(prev => ({
-          ...(prev || { id: todayId, date: new Date().toISOString() }),
-          intake: newIntake,
-      }));
-
-      toast({
-        title: "Success",
-        description: `${grams}g of protein logged.`,
-      });
-    } catch (error) {
-       console.error("Error adding protein intake: ", error);
-       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not log protein intake.",
-      });
-    }
-  };
 
   const fetchWaterIntakeData = useCallback(async (db: any) => {
     try {
@@ -251,6 +151,105 @@ const fetchUserProfile = useCallback(async (db: any) => {
     }
 }, [toast]);
 
+const fetchProteinIntake = useCallback(async (db: any) => {
+  try {
+      const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
+      const docRef = doc(db, "proteinIntake", todayId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+          setProteinIntake(docSnap.data() as ProteinIntakeData);
+      } else {
+          const newProteinIntake: ProteinIntakeData = {
+              id: todayId,
+              date: new Date().toISOString(),
+              intake: 0,
+          }
+          await setDoc(docRef, newProteinIntake);
+          setProteinIntake(newProteinIntake);
+      }
+  } catch (error) {
+      console.error("Error fetching protein intake:", error);
+      toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not load protein intake data.",
+      });
+  }
+}, [toast]);
+
+
+  const fetchInitialData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const db = await getDb();
+      
+      const workoutsQuerySnapshot = await getDocs(collection(db, "workouts"));
+      const workoutsData = workoutsQuerySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Workout[];
+      setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      
+      await Promise.all([
+        fetchWaterIntakeData(db),
+        fetchDailyStats(db),
+        fetchUserProfile(db),
+        fetchProteinIntake(db)
+      ]);
+
+    } catch (error) {
+      console.error("Error fetching initial data: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not load initial app data.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchDailyStats, fetchProteinIntake, fetchUserProfile, fetchWaterIntakeData, toast]);
+
+
+  useEffect(() => {
+    if (isDbReady) {
+      fetchInitialData();
+    }
+  }, [isDbReady, fetchInitialData]);
+
+  const handleAddProtein = async (grams: number) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
+    const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
+    const currentIntake = proteinIntake?.intake || 0;
+    const newIntake = currentIntake + grams;
+
+    try {
+      const db = await getDb();
+      const docRef = doc(db, "proteinIntake", todayId);
+      
+      await setDoc(docRef, { intake: newIntake, id: todayId, date: new Date().toISOString() }, { merge: true });
+
+      setProteinIntake(prev => ({
+          ...(prev || { id: todayId, date: new Date().toISOString(), intake: 0 }),
+          intake: newIntake,
+      }));
+
+      toast({
+        title: "Success",
+        description: `${grams}g of protein logged.`,
+      });
+    } catch (error) {
+       console.error("Error adding protein intake: ", error);
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not log protein intake.",
+      });
+    }
+  };
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
     if (!isDbReady) {
@@ -351,19 +350,16 @@ const fetchUserProfile = useCallback(async (db: any) => {
     try {
       const db = await getDb();
       const docRef = doc(db, "waterIntake", docId);
-      const docSnap = await getDoc(docRef);
+      
+      const todayData = waterIntakeData.find(d => d.date === format(today, "E"));
+      const currentIntake = todayData ? (waterIntakeData.reduce((acc, curr) => curr.date === format(today, "E") ? curr.intake : acc, 0)) : 0;
+      const newIntake = currentIntake + intakeInLiters;
 
-      if (docSnap.exists()) {
-        const currentIntake = docSnap.data().intake || 0;
-        await updateDoc(docRef, {
-          intake: currentIntake + intakeInLiters,
-        });
-      } else {
-        await setDoc(docRef, {
-          date: format(today, "yyyy-MM-dd"),
-          intake: intakeInLiters,
-        });
-      }
+      await setDoc(docRef, {
+          date: docId,
+          intake: newIntake,
+      }, { merge: true });
+
       toast({
         title: "Success",
         description: `${quantity}ml of water logged.`,
