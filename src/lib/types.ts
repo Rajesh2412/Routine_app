@@ -58,5 +58,3 @@ export interface UserProfile {
     height: string;
     lastUpdated: string; // ISO date string
 }
-
-    
