@@ -116,8 +116,8 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
             const dayWorkouts = getWorkoutsForDay(item.day);
             return (
                 <TabsContent key={item.day} value={item.day}>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="flex flex-col items-center justify-center p-8 bg-secondary/30 rounded-lg min-h-[150px]">
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 bg-secondary/30 rounded-lg">
+                    <div className="flex flex-col items-center justify-center p-8 min-h-[150px]">
                       {item.icon}
                       <p className="mt-4 text-2xl font-bold text-foreground">
                         {item.focus} Day
@@ -125,11 +125,11 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                       <p className="text-sm text-muted-foreground">{item.day}</p>
                     </div>
                   
-                    <div className="h-full">
+                    <div className="h-full p-4">
                        {dayWorkouts.length > 0 ? (
                         <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2">
                           {dayWorkouts.map(workout => (
-                            <div key={workout.id} className="p-3 bg-secondary/50 rounded-lg border border-border/50 text-sm">
+                            <div key={workout.id} className="p-3 bg-background/50 rounded-lg border border-border/50 text-sm">
                                <p className="font-semibold text-primary">{workout.type}</p>
                                <div className="grid grid-cols-3 gap-2 mt-2 text-muted-foreground text-xs">
                                   <span className="flex items-center gap-1"><Layers className="h-3 w-3" /> {workout.sets} sets</span>
@@ -140,7 +140,7 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                           ))}
                         </div>
                       ) : (
-                        <div className="flex items-center justify-center h-full rounded-lg bg-secondary/20">
+                        <div className="flex items-center justify-center h-full rounded-lg bg-background/20">
                           <p className="text-sm text-muted-foreground text-center py-4">
                             No workouts logged for this day yet.
                           </p>
