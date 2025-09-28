@@ -17,7 +17,6 @@ import PersonalStats from "./components/personal-stats";
 import WaterIntakeChart from "./components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import WeeklyPlan from "./components/weekly-plan";
-import FoodNutrition from "./components/food-nutrition";
 import ProteinTracker from "./components/protein-tracker";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -507,7 +506,6 @@ const fetchUserProfile = useCallback(async () => {
         />
         <WeeklyPlan workouts={workouts} />
         <WaterIntakeChart data={waterIntakeData} />
-        <FoodNutrition />
         <ProteinTracker 
             dailyIntake={proteinIntake?.intake || 0}
             proteinGoal={proteinGoal}
@@ -549,3 +547,5 @@ const fetchUserProfile = useCallback(async () => {
     </div>
   );
 }
+
+    
