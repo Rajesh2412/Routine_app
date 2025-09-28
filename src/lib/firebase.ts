@@ -4,12 +4,12 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBwQO2j28zWCMpA0s-945NoiA1LvrXQP1U",
-    authDomain: "rajesh-routine-a20c3.firebaseapp.com",
-    projectId: "rajesh-routine-a20c3",
-    storageBucket: "rajesh-routine-a20c3.appspot.com",
-    messagingSenderId: "1050736185289",
-    appId: "1:1050736185289:web:1d18227f4c7a8b542c3243"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
   };
 
 let dbPromise: Promise<Firestore> | null = null;
@@ -21,6 +21,13 @@ const initializeDb = (): Promise<Firestore> => {
 
     dbPromise = new Promise((resolve, reject) => {
         try {
+            // Check if all firebase config values are present
+            if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.storageBucket || !firebaseConfig.messagingSenderId || !firebaseConfig.appId) {
+                console.error("Firebase config is missing. Make sure all environment variables are set.");
+                reject(new Error("Firebase config is missing."));
+                return;
+            }
+
             const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
             const firestore = getFirestore(app);
 
