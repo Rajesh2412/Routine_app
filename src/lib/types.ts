@@ -20,7 +20,6 @@ export interface Workout {
   equipment: string;
   bodyPart: BodyPart;
   kg: number;
-  protein: number;
 }
 
 export const workoutFormSchema = z.object({
@@ -37,6 +36,12 @@ export type WorkoutFormValues = z.infer<typeof workoutFormSchema>;
 export interface WaterIntakeData {
   date: string; // e.g., "Mon", "Tue"
   intake: number; // in Liters
+}
+
+export interface ProteinIntakeData {
+    id: string; // "yyyy-MM-dd"
+    date: string; // ISO date string
+    intake: number; // in grams
 }
 
 export interface DailyStats {

@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
-import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats, BodyPart, UserProfile } from "@/lib/types";
+import type { Workout, WorkoutFormValues, WaterIntakeData, DailyStats, BodyPart, UserProfile, ProteinIntakeData } from "@/lib/types";
 import { WEEKLY_PLAN } from "@/lib/data";
 import { Loader2, History, Filter } from "lucide-react";
 import WorkoutHistory from "@/app/components/workout-history";
@@ -18,6 +18,7 @@ import WaterIntakeChart from "./components/water-intake-chart";
 import WaterIntakeForm from "@/app/components/water-intake-form";
 import WeeklyPlan from "./components/weekly-plan";
 import FoodNutrition from "./components/food-nutrition";
+import ProteinTracker from "./components/protein-tracker";
 import { format, subDays, startOfDay } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +30,7 @@ export default function Home() {
   const [waterIntakeData, setWaterIntakeData] = useState<WaterIntakeData[]>([]);
   const [dailyStats, setDailyStats] = useState<DailyStats | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [proteinIntake, setProteinIntake] = useState<ProteinIntakeData | null>(null);
   const [filter, setFilter] = useState<string>("All");
   const [isWorkoutFormOpen, setIsWorkoutFormOpen] = useState(false);
   const [isWaterFormOpen, setIsWaterFormOpen] = useState(false);
@@ -53,6 +55,69 @@ export default function Home() {
         });
       });
   }, [toast]);
+  
+  const fetchProteinIntake = useCallback(async () => {
+    if (!isDbReady) return;
+    try {
+        const db = await getDb();
+        const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
+        const docRef = doc(db, "proteinIntake", todayId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            setProteinIntake(docSnap.data() as ProteinIntakeData);
+        } else {
+            const newProteinIntake: ProteinIntakeData = {
+                id: todayId,
+                date: new Date().toISOString(),
+                intake: 0,
+            }
+            await setDoc(docRef, newProteinIntake);
+            setProteinIntake(newProteinIntake);
+        }
+    } catch (error) {
+        console.error("Error fetching protein intake:", error);
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Could not load protein intake data.",
+        });
+    }
+  }, [isDbReady, toast]);
+
+  const handleAddProtein = async (grams: number) => {
+    if (!isDbReady) {
+       toast({ variant: "destructive", title: "Database not ready."});
+       return;
+    }
+    const todayId = format(startOfDay(new Date()), "yyyy-MM-dd");
+
+    try {
+      const db = await getDb();
+      const docRef = doc(db, "proteinIntake", todayId);
+      const currentIntake = proteinIntake?.intake || 0;
+      const newIntake = currentIntake + grams;
+      
+      await setDoc(docRef, { intake: newIntake, id: todayId, date: new Date().toISOString() }, { merge: true });
+
+      setProteinIntake(prev => ({
+          ...(prev || { id: todayId, date: new Date().toISOString() }),
+          intake: newIntake,
+      }));
+
+      toast({
+        title: "Success",
+        description: `${grams}g of protein logged.`,
+      });
+    } catch (error) {
+       console.error("Error adding protein intake: ", error);
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not log protein intake.",
+      });
+    }
+  };
 
   const fetchWaterIntakeData = useCallback(async () => {
     if (!isDbReady) return;
@@ -173,6 +238,7 @@ const fetchUserProfile = useCallback(async () => {
         await fetchWaterIntakeData();
         await fetchDailyStats();
         await fetchUserProfile();
+        await fetchProteinIntake();
 
       } catch (error) {
         console.error("Error fetching initial data: ", error);
@@ -187,7 +253,7 @@ const fetchUserProfile = useCallback(async () => {
     };
 
     fetchInitialData();
-  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats, fetchUserProfile]);
+  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats, fetchUserProfile, fetchProteinIntake]);
 
 
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
@@ -356,6 +422,13 @@ const fetchUserProfile = useCallback(async () => {
     }
   };
 
+  const proteinGoal = useMemo(() => {
+    if (!userProfile?.weight) return 0;
+    const weightValue = parseFloat(userProfile.weight);
+    if (isNaN(weightValue)) return 0;
+    return weightValue * 1.6;
+  }, [userProfile?.weight]);
+
   const handleOpenEditForm = (workout: Workout) => {
     setEditingWorkout(workout);
     setIsWorkoutFormOpen(true);
@@ -435,6 +508,12 @@ const fetchUserProfile = useCallback(async () => {
         <WeeklyPlan workouts={workouts} />
         <WaterIntakeChart data={waterIntakeData} />
         <FoodNutrition />
+        <ProteinTracker 
+            dailyIntake={proteinIntake?.intake || 0}
+            proteinGoal={proteinGoal}
+            onAddProtein={handleAddProtein}
+            isLoading={!proteinIntake}
+        />
       </div>
     );
   };
