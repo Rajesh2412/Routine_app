@@ -1,21 +1,10 @@
 {
-  "name": "RajEsh's workout routine",
-  "short_name": "RajEsh's Routine",
+  "name": "RajEsh's Workout Routine",
+  "short_name": "Rajesh's Routine",
   "description": "A personalized workout journal app to track daily exercise details.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#222128",
-  "theme_color": "#8b5cf6",
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#1c2128",
+  "theme_color": "#a371f7",
+  "icons": []
 }
