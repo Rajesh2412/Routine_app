@@ -128,7 +128,7 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                   
                     <div className="h-full p-4">
                        {dayWorkouts.length > 0 ? (
-                        <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-2">
                           {dayWorkouts.map(workout => (
                             <div key={workout.id} className="p-2 bg-background/50 rounded-md border border-border/50 text-xs">
                                <p className="font-semibold text-primary truncate">{workout.type}</p>
