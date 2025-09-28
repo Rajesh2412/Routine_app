@@ -21,13 +21,6 @@ const initializeDb = (): Promise<Firestore> => {
 
     dbPromise = new Promise((resolve, reject) => {
         try {
-            // Check if all firebase config values are present
-            if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId || !firebaseConfig.storageBucket || !firebaseConfig.messagingSenderId || !firebaseConfig.appId) {
-                console.error("Firebase config is missing. Make sure all environment variables are set.");
-                reject(new Error("Firebase config is missing."));
-                return;
-            }
-
             const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
             const firestore = getFirestore(app);
 
