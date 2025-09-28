@@ -117,8 +117,8 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
             const dayWorkouts = getWorkoutsForDay(item.day);
             return (
                 <TabsContent key={item.day} value={item.day}>
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 bg-secondary/30 rounded-lg">
-                    <div className="flex flex-col items-center justify-center p-8 min-h-[150px]">
+                  <div className="mt-4 flex flex-col md:flex-row bg-secondary/30 rounded-lg">
+                    <div className="flex flex-col items-center justify-center p-8 min-h-[150px] md:w-1/3">
                       {item.icon}
                       <p className="mt-4 text-2xl font-bold text-foreground">
                         {item.focus} Day
@@ -126,13 +126,13 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                       <p className="text-sm text-muted-foreground">{item.day}</p>
                     </div>
                   
-                    <div className="h-full p-4">
+                    <div className="h-full p-4 md:w-2/3">
                        {dayWorkouts.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-2">
                           {dayWorkouts.map(workout => (
                             <div key={workout.id} className="p-2 bg-background/50 rounded-md border border-border/50 text-xs">
                                <p className="font-semibold text-primary truncate">{workout.type}</p>
-                               <div className="grid grid-cols-3 gap-1 mt-1 text-muted-foreground">
+                               <div className="flex flex-row flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-muted-foreground">
                                   <span className="flex items-center gap-1"><Layers className="h-2.5 w-2.5" /> {workout.sets} sets</span>
                                   <span className="flex items-center gap-1"><Repeat className="h-2.5 w-2.5" /> {workout.reps} reps</span>
                                   {workout.kg > 0 && <span className="flex items-center gap-1"><Weight className="h-2.5 w-2.5" /> {workout.kg} kg</span>}
