@@ -54,6 +54,46 @@ export default function Home() {
         });
       });
   }, [toast]);
+
+  useEffect(() => {
+    if (!isDbReady) return;
+
+    const fetchInitialData = async () => {
+      setIsLoading(true);
+      try {
+        const db = await getDb();
+        
+        // Fetch Workouts
+        const workoutsQuerySnapshot = await getDocs(collection(db, "workouts"));
+        const workoutsData = workoutsQuerySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Workout[];
+        setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        
+        // Fetch Other Data
+        await Promise.all([
+          fetchWaterIntakeData(),
+          fetchDailyStats(),
+          fetchUserProfile(),
+          fetchProteinIntake()
+        ]);
+
+      } catch (error) {
+        console.error("Error fetching initial data: ", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not load initial app data.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [isDbReady, toast]);
+
   
   const fetchProteinIntake = useCallback(async () => {
     if (!isDbReady) return;
@@ -220,41 +260,6 @@ const fetchUserProfile = useCallback(async () => {
 }, [isDbReady, toast]);
 
 
-  useEffect(() => {
-    if (!isDbReady) return;
-
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      try {
-        const db = await getDb();
-        const workoutsQuerySnapshot = await getDocs(collection(db, "workouts"));
-        const workoutsData = workoutsQuerySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Workout[];
-        setWorkouts(workoutsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        
-        await fetchWaterIntakeData();
-        await fetchDailyStats();
-        await fetchUserProfile();
-        await fetchProteinIntake();
-
-      } catch (error) {
-        console.error("Error fetching initial data: ", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Could not load initial app data.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchInitialData();
-  }, [isDbReady, toast, fetchWaterIntakeData, fetchDailyStats, fetchUserProfile, fetchProteinIntake]);
-
-
   const handleAddWorkout = async (workout: WorkoutFormValues) => {
     if (!isDbReady) {
        toast({ variant: "destructive", title: "Database not ready."});
@@ -284,10 +289,6 @@ const fetchUserProfile = useCallback(async () => {
   };
 
   const handleUpdateWorkout = async (workout: Workout) => {
-    if (!isDbReady) {
-      toast({ variant: "destructive", title: "Database not ready." });
-      return;
-    }
     if (!workout || !workout.id) {
       console.error("Error: workout ID is missing or workout object is invalid.", workout);
       toast({
@@ -295,6 +296,10 @@ const fetchUserProfile = useCallback(async () => {
         title: "Error",
         description: "Cannot update workout with an invalid ID.",
       });
+      return;
+    }
+    if (!isDbReady) {
+      toast({ variant: "destructive", title: "Database not ready." });
       return;
     }
     try {
@@ -556,7 +561,5 @@ const fetchUserProfile = useCallback(async () => {
     </div>
   );
 }
-
-    
 
     
