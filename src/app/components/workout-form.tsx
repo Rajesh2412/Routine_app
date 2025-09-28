@@ -43,6 +43,7 @@ const formSchema = z.object({
     .min(1, { message: "Must be at least 1 set." }),
   equipment: z.string().min(2, { message: "Equipment is required." }),
   bodyPart: z.enum(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Abs", "Lower Back"]),
+  kg: z.coerce.number({ invalid_type_error: "Weight must be a number." }).min(0).optional(),
 });
 
 
@@ -71,6 +72,7 @@ export default function WorkoutForm({
       sets: 0,
       equipment: "None",
       bodyPart: undefined,
+      kg: 0,
     },
   });
 
@@ -81,6 +83,7 @@ export default function WorkoutForm({
           ...editingWorkout,
           reps: Number(editingWorkout.reps),
           sets: Number(editingWorkout.sets),
+          kg: Number(editingWorkout.kg || 0),
         });
       } else {
         form.reset({
@@ -89,16 +92,24 @@ export default function WorkoutForm({
           sets: 0,
           equipment: "None",
           bodyPart: initialValues?.bodyPart || undefined,
+          kg: 0,
         });
       }
     }
   }, [editingWorkout, form, isOpen, initialValues]);
 
   const onSubmit = (data: WorkoutFormValues) => {
+    const workoutData = {
+      ...data,
+      reps: Number(data.reps),
+      sets: Number(data.sets),
+      kg: Number(data.kg || 0),
+    };
+
     if (editingWorkout) {
-      updateWorkout({ ...editingWorkout, ...data, reps: Number(data.reps), sets: Number(data.sets) });
+      updateWorkout({ ...editingWorkout, ...workoutData });
     } else {
-      addWorkout({ ...data, reps: Number(data.reps), sets: Number(data.sets) });
+      addWorkout(workoutData);
     }
     setIsOpen(false);
   };
@@ -159,19 +170,34 @@ export default function WorkoutForm({
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="equipment"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Equipment</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Dumbbells" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="equipment"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Equipment</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Dumbbells" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="kg"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight (kg)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g., 10" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="bodyPart"

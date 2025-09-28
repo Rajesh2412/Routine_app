@@ -198,6 +198,7 @@ const fetchUserProfile = useCallback(async () => {
     const newWorkout = {
       ...workout,
       date: new Date().toISOString(),
+      kg: workout.kg || 0,
     };
     try {
       const db = await getDb();
@@ -226,7 +227,7 @@ const fetchUserProfile = useCallback(async () => {
       const db = await getDb();
       const workoutRef = doc(db, "workouts", workout.id);
       const { id, ...workoutData } = workout;
-      await updateDoc(workoutRef, workoutData);
+      await updateDoc(workoutRef, {...workoutData, kg: workout.kg || 0});
       setWorkouts((prev) =>
         prev.map((w) => (w.id === workout.id ? workout : w))
       );
