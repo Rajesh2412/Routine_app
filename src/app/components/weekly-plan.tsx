@@ -130,8 +130,8 @@ export default function WeeklyPlan({ workouts }: WeeklyPlanProps) {
                        {dayWorkouts.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-2">
                           {dayWorkouts.map(workout => (
-                            <div key={workout.id} className="p-2 bg-background/50 rounded-md border border-border/50 text-xs">
-                               <p className="font-semibold text-primary truncate">{workout.type}</p>
+                            <div key={workout.id} className="p-2 bg-background/50 rounded-md border border-border/50 text-xs w-40">
+                               <p className="font-semibold text-primary truncate text-center">{workout.type}</p>
                                <div className="flex flex-row flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-muted-foreground">
                                   <span className="flex items-center gap-1"><Layers className="h-2.5 w-2.5" /> {workout.sets} sets</span>
                                   <span className="flex items-center gap-1"><Repeat className="h-2.5 w-2.5" /> {workout.reps} reps</span>
