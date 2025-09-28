@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
     apiKey: "AIzaSyDg2akIc404Y30V0NOyN6-P2VF3Nh-JtNU",
