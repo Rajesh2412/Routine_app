@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import { Footprints, Ruler, Weight } from "lucide-react";
+import { Footprints, Ruler, Weight, Flame } from "lucide-react";
 import { format } from "date-fns";
 import type { DailyStats, UserProfile } from "@/lib/types";
 
@@ -83,9 +83,16 @@ export default function PersonalStats({
     }
   };
 
+  const proteinNeeded = useMemo(() => {
+    if (!profile?.weight) return "N/A";
+    const weightValue = parseFloat(profile.weight);
+    if (isNaN(weightValue)) return "N/A";
+    return `${(weightValue * 1.6).toFixed(0)}g`;
+  }, [profile?.weight]);
+
   return (
     <>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -148,6 +155,22 @@ export default function PersonalStats({
                 Last updated: {format(new Date(profile.lastUpdated), "Pp")}
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Protein Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Protein Needed</CardTitle>
+            <Flame className="h-8 w-8 text-primary" />
+          </CardHeader>
+          <CardContent>
+             <div className="text-2xl font-bold">
+                {proteinNeeded}
+            </div>
+            <p className="pt-2 text-xs text-muted-foreground">
+                Daily protein goal (1.6g/kg)
+            </p>
           </CardContent>
         </Card>
 

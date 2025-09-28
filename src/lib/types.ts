@@ -20,6 +20,7 @@ export interface Workout {
   equipment: string;
   bodyPart: BodyPart;
   kg: number;
+  protein: number;
 }
 
 export const workoutFormSchema = z.object({
