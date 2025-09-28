@@ -4,12 +4,12 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+    apiKey: "AIzaSyAd1m5K6Uy_Y4cd0dAesns3iuY_wtikQ3E",
+    authDomain: "studio-360945248-2435a.firebaseapp.com",
+    projectId: "studio-360945248-2435a",
+    storageBucket: "studio-360945248-2435a.firebasestorage.app",
+    messagingSenderId: "866067498857",
+    appId: "1:866067498857:web:81683caf827cd5e8e35ff8"
   };
 
 let dbPromise: Promise<Firestore> | null = null;
